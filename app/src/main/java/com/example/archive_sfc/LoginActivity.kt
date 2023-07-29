@@ -1,22 +1,29 @@
 package com.example.archive_sfc
 
 import android.annotation.SuppressLint
-import android.content.Intent
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.Observer
+import androidx.annotation.RequiresApi
+import com.example.archive_sfc.constante.Message
 import com.example.archive_sfc.databinding.ActivityLoginBinding
 import com.example.archive_sfc.models.User
 import com.example.archive_sfc.viewmodel.UserViewModel
 import com.example.archive_sfc.viewmodel.UserViewModelFactory
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 
+
+@RequiresApi(Build.VERSION_CODES.M)
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
 
@@ -24,26 +31,26 @@ class LoginActivity : AppCompatActivity() {
         UserViewModelFactory((application as UserApplication).repository)
     }
    private val items = listOf("Offline","Online","Auto")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 //        var user =  User(0,"chad","0000")
 //        userViewModel.insert(user)
-        userViewModel.allWords.observe(this, Observer {
+        userViewModel.allWords.observe(this) {
 
 
-            Log.d("User content",it.toString())
+            Log.d("User content", it.toString())
             Toast.makeText(
                 applicationContext,
                 it[0].username,
                 Toast.LENGTH_LONG
             ).show()
-        })
+        }
 
 
-        userViewModel.user.observe(this, Observer {
-            
+        userViewModel.user.observe(this){
             if(it != null){
                 Log.d("User content",it.toString())
                 Toast.makeText(
@@ -53,11 +60,10 @@ class LoginActivity : AppCompatActivity() {
                 ).show()
             }
 
-        })
-       // binding.modeConnexion.adapter.toString()
-
+        }
         main()
     }
+
 
     private fun main() {
         optionSelect()
@@ -73,19 +79,19 @@ class LoginActivity : AppCompatActivity() {
         binding.buttonLogin.setOnClickListener {
             val username =  binding.username.text.toString()
             val password =   binding.password.text.toString()
-            var mode =   binding.modeConnexion.text.toString()
+            val mode =   binding.modeConnexion.text.toString()
             Toast.makeText(
                 applicationContext,
                 mode,
                 Toast.LENGTH_LONG
             ).show()
-    if(!mode.isNullOrEmpty()){
-        if (!username.isNullOrEmpty() || !password.isNullOrEmpty()){
+    if(mode.isNotEmpty()){
+        if (username.isNotEmpty() || password.isNotEmpty()){
             val user = User(0,username, password)
             when (mode) {
-                items[0] -> offline(user)
-                items[1] -> online(user)
-                items[2] -> auto(user)
+                items[0] -> offline(user,it)
+                items[1] -> online(user,it)
+                items[2] -> auto(user,it)
                 else ->  Toast.makeText(
                     applicationContext,
                     "Mode null",
@@ -113,8 +119,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    private fun offline(_user: User) {
-        val user = null
+    private fun offline(_user: User,view:View) {
         GlobalScope.launch {
             val test = userViewModel.auth(_user)
             if (test != null) {
@@ -123,12 +128,20 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun online(user: User) {
-
+    private fun online(user: User,view:View) {
+        if(!checkingConnexion()) run {
+            Message.connexion_msg = "Connexion failed"
+            Snackbar.make(view, Message.connexion_msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show()
+            return@run
+        }
     }
 
-    private fun auto(user: User) {
 
+    private fun auto(user: User,view:View) {
+        if(!checkingConnexion()) run {
+            Message.connexion_msg = "Connexion failed"
+        }
     }
 
     private fun optionSelect(){
@@ -140,6 +153,22 @@ class LoginActivity : AppCompatActivity() {
             binding.modeConnexion.adapter.toString(),
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    private fun checkingConnexion():Boolean {
+        val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as (ConnectivityManager)
+        val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
+        var isAvailable = false
+        if (capabilities != null) {
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                isAvailable = true
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                isAvailable = true
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                isAvailable = true
+            }
+        }
+        return isAvailable
     }
 
 }

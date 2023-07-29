@@ -21,6 +21,7 @@ import com.example.archive_sfc.viewmodel.UserViewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -135,6 +136,20 @@ class LoginActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
             return@run
         }
+
+        val data :JSONObject = JSONObject()
+        data.put("username",user.username)
+        data.put("password",user.password)
+
+        Snackbar.make(view, "Hello world ${data.get("username")}", Snackbar.LENGTH_LONG)
+            .setAction("Action", null).show()
+
+
+
+
+
+
+
     }
 
 

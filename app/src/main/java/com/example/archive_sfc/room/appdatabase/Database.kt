@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.archive_sfc.models.User
-import com.example.archive_sfc.myinterface.IUserDao
+import com.example.archive_sfc.room.user.myinterface.IUserDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

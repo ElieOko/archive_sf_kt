@@ -3,7 +3,7 @@ package com.example.archive_sfc.viewmodel
 import androidx.appcompat.view.menu.ListMenuItemView
 import androidx.lifecycle.*
 import com.example.archive_sfc.models.User
-import com.example.archive_sfc.repository.UserRepository
+import com.example.archive_sfc.room.user.myinterface.repository.UserRepository
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 

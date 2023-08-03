@@ -1,8 +1,8 @@
-package com.example.archive_sfc.repository
+package com.example.archive_sfc.room.user.myinterface.repository
 
 import androidx.annotation.WorkerThread
 import com.example.archive_sfc.models.User
-import com.example.archive_sfc.myinterface.IUserDao
+import com.example.archive_sfc.room.user.myinterface.IUserDao
 import kotlinx.coroutines.flow.Flow
 
 class UserRepository(private val userDao: IUserDao) {

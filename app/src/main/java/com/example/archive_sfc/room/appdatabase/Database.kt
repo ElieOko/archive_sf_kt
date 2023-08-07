@@ -1,19 +1,37 @@
-package com.example.archive_sfc.appdatabase
+package com.example.archive_sfc.room.appdatabase
 
+import com.example.archive_sfc.models.room.Directory
+import com.example.archive_sfc.room.directory.myinterface.IDirectoryDao
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.archive_sfc.models.User
+import com.example.archive_sfc.models.room.*
+import com.example.archive_sfc.room.Converters
+import com.example.archive_sfc.room.branch.myinterface.IBranchDao
+import com.example.archive_sfc.room.invoice.myinterface.IInvoiceDao
+import com.example.archive_sfc.room.invoicekey.myinterface.IInvoiceKeyDao
+import com.example.archive_sfc.room.picture.myinterface.IPictureDao
 import com.example.archive_sfc.room.user.myinterface.IUserDao
+import com.example.archive_sfc.room.userdirectory.myinterface.IUserDirectoyDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = arrayOf(User::class), version = 1, exportSchema = false)
+
+@TypeConverters(Converters::class)
+@Database(entities = [User::class, Branch::class, Directory::class, UserDirectory::class, InvoiceKey::class,Invoice::class,Picture::class], version = 11, exportSchema = false)
 public abstract class UserRoomDatabase : RoomDatabase() {
 
     abstract fun userDao(): IUserDao
+    abstract fun branchDao():IBranchDao
+    abstract fun directoryDao(): IDirectoryDao
+    abstract fun userDirectoryDao(): IUserDirectoyDao
+    abstract fun invoiceKeyDao(): IInvoiceKeyDao
+    abstract fun invoiceDao(): IInvoiceDao
+    abstract fun pictureDao(): IPictureDao
+
 
     companion object {
         // Singleton prevents multiple instances of database opening at the

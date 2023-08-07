@@ -61,6 +61,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    //gson
+    implementation 'com.google.code.gson:gson:2.10.1'
     //Mlkit barcode
     implementation 'com.google.mlkit:barcode-scanning:17.2.0'
     //ViewPager
@@ -97,4 +99,5 @@ dependencies {
     implementation("androidx.room:room-paging:$room_version")
 
     kapt("androidx.room:room-compiler:$room_version")
+
 }

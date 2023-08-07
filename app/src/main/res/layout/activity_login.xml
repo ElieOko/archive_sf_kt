@@ -12,8 +12,6 @@
     android:gravity="center"
     tools:context=".LoginActivity">
 
-
-
         <LinearLayout
             android:id="@+id/globe"
             android:layout_width="match_parent"
@@ -34,6 +32,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 app:helperTextTextColor="#D61D1D"
                 android:layout_width="match_parent"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
                 android:padding="12dp"
                 android:layout_height="wrap_content">
                 <AutoCompleteTextView
@@ -51,6 +51,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                 app:helperTextTextColor="#D61D1D"
                 android:layout_width="match_parent"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
                 android:padding="12dp"
                 android:layout_height="wrap_content">
                 <com.google.android.material.textfield.TextInputEditText
@@ -68,6 +70,8 @@
                 app:helperTextTextColor="#D61D1D"
                 android:layout_width="match_parent"
                 android:padding="12dp"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
                 android:layout_height="wrap_content">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/password"

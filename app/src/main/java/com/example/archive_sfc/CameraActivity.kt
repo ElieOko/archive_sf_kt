@@ -38,7 +38,7 @@ class CameraActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
     private lateinit var imageAnalysis : ImageAnalysis
-    private lateinit var processCameraProvider :ProcessCameraProvider
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityCameraBinding.inflate(layoutInflater)
@@ -50,7 +50,8 @@ class CameraActivity : AppCompatActivity() {
         ) {
             val verify = resultLaunch()
             verify.launch(arrayOf(
-                Manifest.permission.CAMERA
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             ))
         }
         else{
@@ -73,7 +74,7 @@ class CameraActivity : AppCompatActivity() {
                     cameraProvider.unbindAll()
                     val camera: Camera = cameraProvider.bindToLifecycle(this,cameraSelector,preview,imageCapture)
 
-                    bindImageAnalysis(cameraSelector)
+                    //bindImageAnalysis(cameraSelector)
                     toggleCameraEvent()
                     toggleFlashEvent(camera)
                     startCaptureEvent()
@@ -86,7 +87,14 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-    private fun bindImageAnalysis(cameraSelector: CameraSelector) {
+    private fun bindImageAnalysis(
+        cameraSelector: CameraSelector,
+
+    ) {
+        val listenableFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProvider: ProcessCameraProvider = listenableFuture.get() as ProcessCameraProvider
+        cameraProvider.unbindAll()
+        cameraProvider.bindToLifecycle(this,cameraSelector,imageAnalysis)
         val scanner = BarcodeScanning.getClient(
             BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS).build()
         )
@@ -97,7 +105,7 @@ class CameraActivity : AppCompatActivity() {
         imageAnalysis.setAnalyzer(cameraExecutor){
             processImageProxy(scanner,it)
         }
-      processCameraProvider.bindToLifecycle(this,cameraSelector,imageAnalysis)
+
     }
 
     @SuppressLint("SuspiciousIndentation")

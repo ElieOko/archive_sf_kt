@@ -1,0 +1,7 @@
+package com.example.archive_sfc.ui.camera
+
+import androidx.lifecycle.ViewModel
+
+class CameraViewModel : ViewModel() {
+    // TODO: Implement the ViewModel
+}

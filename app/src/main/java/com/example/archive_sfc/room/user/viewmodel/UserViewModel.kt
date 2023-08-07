@@ -1,10 +1,8 @@
-package com.example.archive_sfc.viewmodel
+package com.example.archive_sfc.room.user.viewmodel
 
-import androidx.appcompat.view.menu.ListMenuItemView
 import androidx.lifecycle.*
-import com.example.archive_sfc.models.User
-import com.example.archive_sfc.room.user.myinterface.repository.UserRepository
-import kotlinx.coroutines.GlobalScope
+import com.example.archive_sfc.models.room.User
+import com.example.archive_sfc.room.user.repository.UserRepository
 import kotlinx.coroutines.launch
 
 
@@ -34,9 +32,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         repository.insert(user)
     }
 
+    fun getUser(_user: User) = repository.getUser(_user)
     fun auth(_user: User) = repository.auth(_user)
-
-
 }
 
 class UserViewModelFactory(private val repository: UserRepository) : ViewModelProvider.Factory {

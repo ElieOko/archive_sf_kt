@@ -2,19 +2,21 @@ package com.example.archive_sfc.models.room
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity
+
+@Entity(indices = [Index(value =["invoiceUniqueId"], unique = true)])
 data class Invoice(
-    @PrimaryKey(autoGenerate = true) val invoiceId: Int,
+    @PrimaryKey(autoGenerate = true) val InvoiceId: Int,
     @ColumnInfo(name = "invoiceCode") val invoiceCode: String,
     @ColumnInfo(name = "invoiceDesc") val invoiceDesc: String,
     @ColumnInfo(name = "invoiceBarCode") val invoiceBarCode: String,
-    @ColumnInfo(name = "userFId") val userFId: Int,
-    @ColumnInfo(name = "directoryFId") val directoryFId: Int,
-    @ColumnInfo(name = "branchFId") val branchFId: Int,
+    @ColumnInfo(name = "userFId") val UserFId: Int,
+    @ColumnInfo(name = "directoryFId") val DirectoryFId: Int,
+    @ColumnInfo(name = "branchFId") val BranchFId: Int,
     @ColumnInfo(name = "invoiceDate") val invoiceDate: String,
-    @ColumnInfo(name = "invoicekeyFId") val invoicekeyFId: Int,
+    @ColumnInfo(name = "invoicekeyFId") val InvoicekeyFId: Int,
     @ColumnInfo(name = "invoicePath") val invoicePath: String,
     @ColumnInfo(name = "androidVersion") val androidVersion: String,
     @ColumnInfo(name = "invoiceUniqueId") val invoiceUniqueId: String,

@@ -20,13 +20,24 @@ import com.example.archive_sfc.constante.Data
 import com.example.archive_sfc.constante.ImageParcours
 import com.example.archive_sfc.databinding.ActivityArchiveBinding
 import com.example.archive_sfc.models.room.Directory
+import com.example.archive_sfc.models.room.Invoice
 import com.example.archive_sfc.models.room.InvoiceKey
+import com.example.archive_sfc.models.room.Picture
+import com.example.archive_sfc.room.Converters
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModel
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModelFactory
+import com.example.archive_sfc.room.invoice.viewmodel.InvoiceViewModel
+import com.example.archive_sfc.room.invoice.viewmodel.InvoiceViewModelFactory
 import com.example.archive_sfc.room.invoicekey.viewmodel.InvoiceKeyViewModel
 import com.example.archive_sfc.room.invoicekey.viewmodel.InvoiceKeyViewModelFactory
+import com.example.archive_sfc.room.picture.viewmodel.PictureViewModel
+import com.example.archive_sfc.room.picture.viewmodel.PictureViewModelFactory
 import com.example.archive_sfc.utils.chiffrement_de_cesar.chiffreDeCesarCryptageEtDecryptage
+import com.example.archive_sfc.utils.convert_file_to_bitmap.convertFileToBitmap
 import com.google.mlkit.vision.barcode.common.Barcode
+import kotlinx.coroutines.Job
+import java.text.SimpleDateFormat
+import java.util.*
 
 @ExperimentalGetImage class ArchiveActivity : AppCompatActivity() {
 
@@ -38,6 +49,14 @@ import com.google.mlkit.vision.barcode.common.Barcode
     private val invoiceKeyViewModel: InvoiceKeyViewModel by viewModels {
         InvoiceKeyViewModelFactory((application as UserApplication).repositoryInvoiceKey)
     }
+    private val invoiceViewModel: InvoiceViewModel by viewModels {
+        InvoiceViewModelFactory((application as UserApplication).repositoryInvoice)
+    }
+    private val pictureViewModel: PictureViewModel by viewModels {
+        PictureViewModelFactory((application as UserApplication).repositoryPicture)
+    }
+    var folderId :Int = 0
+    var keyId :Int = 0
     var itemsInvoiceKey = mutableListOf<String>()
     var itemsFolder = mutableListOf<String>()
     var itemSubFolder = mutableListOf<String>()
@@ -130,81 +149,165 @@ import com.google.mlkit.vision.barcode.common.Barcode
     private fun verifySubFolder(){
         var itemSub = mutableListOf<Directory>()
         var itemKey = mutableListOf<InvoiceKey>()
-        mBinding.folderIdSelect.addTextChangedListener {ed->
-                //mBinding.subfolderIdSeflect.visibility = View.VISIBLE
-                var dynamique :Any? = null
-                var key :Int? = null
-                mBinding.subfolderIdSeflect.setText("")
-                directoryViewModel.allDirectory.observe(this){
-                    it.forEach {directory ->
-                        if(ed.toString() == directory.DirectoryName){
-                            key = directory.DirectoryId
-                            if(directory.parentId != null)
-                            {
-                                dynamique =  directory.parentId
-//                                Toast.makeText(this,"$dynamique run",Toast.LENGTH_LONG).show()
-                            }
-                            else{
-                                mBinding.subfolderIdSeflect.setText("")
-//                                Toast.makeText(this,"no run",Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
+        var itemForId = mutableListOf<InvoiceKey>()
 
-                    if(dynamique != null){
-                        itemSubFolder.clear()
-                        itemSub.clear()
-                        it.filterTo(itemSub){i->
-                            i.DirectoryId == dynamique.toString().toInt()
+
+        mBinding.folderIdSelect.addTextChangedListener { ed->
+            var dynamique :Any? = null
+            directoryViewModel.allDirectory.observe(this){
+                it.forEach {directory ->
+                    if(ed.toString() == directory.DirectoryName){
+                        folderId = directory.DirectoryId
+                        if(directory.parentId != null){
+                            dynamique = directory.parentId
                         }
-                            itemSub.forEach{item->
-                                itemSubFolder.add(item.DirectoryName)
-                            }
-                        mBinding.subfolderIdSeflect.setText(itemSub[0].DirectoryName)
-                        mBinding.subfolder.visibility = View.VISIBLE
-                    }
-                    else{
-                        mBinding.subfolder.visibility = View.GONE
-                        itemSub.clear()
-                        itemSubFolder.clear()
                     }
                 }
-                if (key != null){
-                    itemKey.clear()
-                    invoiceKeyViewModel.allInvoiceKey.observe(this){keys->
-                        keys.filterTo(itemKey){outInvoice->
-                            outInvoice.DirectoryFId == key
-                        }
+                if (dynamique != null){
+                    itemSubFolder.clear()
+                    itemSub.clear()
+                    it.filterTo(itemSub){i->
+                        i.DirectoryId == dynamique
                     }
-                    itemKey.forEach {invoiceKey->
-                        itemsInvoiceKey.add(invoiceKey.Invoicekey)
+                    itemSub.forEach{item->
+                        itemSubFolder.add(item.DirectoryName)
                     }
+                    mBinding.subfolder.visibility = View.VISIBLE
+                }
+                else{
+                    itemSub.clear()
+                    itemSubFolder.clear()
+                    mBinding.subfolderIdSeflect.setText("")
+                    mBinding.subfolder.visibility = View.GONE
                 }
                 val selectItems = ArrayAdapter(applicationContext,R.layout.itemsub,itemSubFolder)
                 mBinding.subfolderIdSeflect.setAdapter(selectItems)
-                val selectKey = ArrayAdapter(this,R.layout.itemkey,itemKey)
-                mBinding.selectKey.setAdapter(selectKey)
             }
+            if (folderId != 0){
+                itemKey.clear()
+                itemsInvoiceKey.clear()
+                invoiceKeyViewModel.allInvoiceKey.observe(this){keys->
+                    keys.filterTo(itemKey){outInvoice->
+                        outInvoice.DirectoryFId == folderId
+                    }
+                }
+                itemKey.forEach {invoiceKey->
+                    itemsInvoiceKey.add(invoiceKey.Invoicekey)
+                }
+            }
+            val selectKey = ArrayAdapter(this,R.layout.itemkey,itemsInvoiceKey)
+            mBinding.selectKey.setAdapter(selectKey)
+//            invoiceKeyViewModel.allInvoiceKey.observe(this){t->
+//                Toast.makeText(this,"$t",Toast.LENGTH_LONG).show()
+//            }
+        }
+
+//
+//        mBinding.folderIdSelect.addTextChangedListener {ed->
+//                //mBinding.subfolderIdSeflect.visibility = View.VISIBLE
+//
+//         directoryViewModel.allDirectory.observe(this){
+//                    it.forEach {directory ->
+//                        if(ed.toString() == directory.DirectoryName){
+//                            folderId = directory.DirectoryId
+//                            if(directory.parentId != null)
+//                            {
+//                                dynamique =  directory.parentId
+////                                Toast.makeText(this,"$dynamique run",Toast.LENGTH_LONG).show()
+//                            }
+//                            else{
+//                                mBinding.subfolderIdSeflect.setText("")
+////                                Toast.makeText(this,"no run",Toast.LENGTH_LONG).show()
+//                            }
+//                        }
+//                    }
+//
+//
+//                }
+
+
+//                val selectKey = ArrayAdapter(this,R.layout.itemkey,itemKey)
+//                mBinding.selectKey.setAdapter(selectKey)
+//            }
+//        mBinding.subfolderIdSeflect.addTextChangedListener {edit->
+//            invoiceKeyViewModel.allInvoiceKey.observe(this)
+//            {
+//                it.filterTo(itemForId){i->
+//                    i.Invoicekey == edit.toString()
+//                }
+//            }
+//            keyId = itemForId[0].InvoicekeyId
+//            itemForId.clear()
+//        }
     }
 
 
 
     private fun storageLocalData(){
         mBinding.saveData.setOnClickListener {
-//            val invoiceCode = mBinding.InvoiceCode.text.toString()
-//            val bareCodeInvoice = mBinding.InvoiceBareCode.text.toString()
-              val invoiceDesc = mBinding.InvoiceDesc.text.toString()
-//            val dateInvoice = mBinding.InvoiceDate.text.toString()
-//            var selectFolder = mBinding.folderIdSelect.toString()
-//            var selectKey = mBinding.selectKey.text.toString()
-//            val clientName = mBinding.clientName.text.toString()
-//            val clientPhone = mBinding.clientPhone.text.toString()
-//            val expireDate = mBinding.InvoiceExpireDate.text.toString()
-//            val versionAndroid = Build.VERSION.RELEASE
-//            val branchFId = Data.user?.BranchFId
-//            val userFId = Data.user?.id
-              val invoiceUniqueId =
-                  Data.user?.let { it1 -> chiffreDeCesarCryptageEtDecryptage(key = 8,mot = it1.username) }
+            var invoiceList = mutableListOf<Invoice>()
+            val invoiceCode = mBinding.InvoiceCode.text.toString()
+            val invoiceBarCode= mBinding.InvoiceBareCode.text.toString()
+            val invoiceDesc = mBinding.InvoiceDesc.text.toString()
+            val invoiceDate = mBinding.InvoiceDate.text.toString()
+            var selectFolder = mBinding.folderIdSelect.toString()
+            var selectKey = mBinding.selectKey.text.toString()
+            val clientName = mBinding.clientName.text.toString()
+            val clientPhone = mBinding.clientPhone.text.toString()
+            val expireDate = mBinding.InvoiceExpireDate.text.toString()
+            val versionAndroid = Build.VERSION.RELEASE
+            val branchFId = Data.user!!.BranchFId as Int
+            val userFId: Int = Data.user!!.id
+            val dateMillisSecond = (SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
+                .format(System.currentTimeMillis())).toString()
+            var invoiceUniqueId = Data.user?.let { it1 -> chiffreDeCesarCryptageEtDecryptage(key = 8,mot = it1.username) }
+            invoiceUniqueId += dateMillisSecond
+            if(invoiceCode.isNotEmpty() && selectFolder.isNotEmpty() && selectKey.isNotEmpty()){
+                  //
+                  val invoice = Invoice(
+                      InvoiceId = 0,
+                      invoiceCode = invoiceCode,
+                      invoiceDesc = invoiceDesc,
+                      invoiceBarCode = invoiceBarCode,
+                      UserFId = userFId,
+                      DirectoryFId = folderId,
+                      BranchFId = branchFId,
+                      invoiceDate = invoiceDate,
+                      InvoicekeyFId = keyId,
+                      invoicePath = "",
+                      androidVersion = versionAndroid,
+                      invoiceUniqueId = invoiceUniqueId!!,
+                      clientName = clientName,
+                      clientPhone = clientPhone,
+                      expiredDate = expireDate
+                  )
+                  val x: Job = invoiceViewModel.insert(invoice)
+
+                  invoiceViewModel.allInvoice.observe(this){
+//                      it.filterTo(invoiceList){invoice->
+//                          invoice.invoiceUniqueId == invoiceUniqueId
+//                      }
+                      it.forEach {i->
+                            Toast.makeText(this,"${i.invoiceCode}",Toast.LENGTH_LONG).show()
+                      }
+                  }
+//                  ImageParcours.stdList.forEach {img->
+//                      val bitmap = convertFileToBitmap(img.fileContent)
+//                      val picture = Picture(
+//                          PictureId = 0,
+//                          InvoiceFId = invoiceList[0].InvoiceId,
+//                          pictureName = img.fileName,
+//                          picturePath = img.fileContent!!.path,
+//                          PublicUrl = "",
+//                          contentFile = bitmap
+//                      )
+//                      pictureViewModel.insert(picture)
+//                  }
+              }
+              else{
+                  //
+                  Toast.makeText(this,"Certains champs sont vides",Toast.LENGTH_LONG).show()
+              }
             //Picture
 
             /*
@@ -215,7 +318,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
     @ColumnInfo(name = "picturePath") val picturePath: String,
     @ColumnInfo(name = "publicUrl", defaultValue = "") val PublicUrl: String,
     @ColumnInfo(name = "pictureOriginalName") var pictureOriginalName: Bitmap? = null,
-
 
 
 

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class UserDirectory(
-    @PrimaryKey(autoGenerate = true) val userDirectoryId: Int,
-    @ColumnInfo(name = "userFId") val userFId: Int,
-    @ColumnInfo(name = "directoryFId") val directoryFId: Int,
+    @PrimaryKey(autoGenerate = true) val UserDirectoryId: Int,
+    @ColumnInfo(name = "userFId") val UserFId: Int,
+    @ColumnInfo(name = "directoryFId") val DirectoryFId: Int,
 )

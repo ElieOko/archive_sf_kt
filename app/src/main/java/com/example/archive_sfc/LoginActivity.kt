@@ -40,7 +40,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-
 @ExperimentalGetImage @RequiresApi(Build.VERSION_CODES.M)
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -48,39 +47,13 @@ class LoginActivity : AppCompatActivity() {
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory((application as UserApplication).repository)
     }
-    private val branchViewModel: BranchViewModel by viewModels {
-        BranchViewModelFactory((application as UserApplication).repositoryBranch)
-    }
    private val items = listOf("Offline","Online","Auto")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        val  branch = Branch(0,"Masina")
-//        branchViewModel.insert(branch)
-//        val  branch2 = Branch(0,"Matete")
-//        branchViewModel.insert(branch2)
-//        branchViewModel.allBranch.observe(this) {
-//            Log.d("cd", it.toString())
-//            Toast.makeText(
-//                applicationContext,
-//                it[0].branchName,
-//                Toast.LENGTH_LONG
-//            ).show()
-//        }
-//        var user =  com.example.archive_sfc.models.room.User(0,"chad","0000")
-//        userViewModel.insert(user)
-//        userViewModel.allWords.observe(this) {
-//
-//
-//            Log.d("com.example.archive_sfc.models.room.User content", it.toString())
-//            Toast.makeText(
-//                applicationContext,
-//                it[0].username,
-//                Toast.LENGTH_LONG
-//            ).show()
-//        }
+
         main()
     }
 

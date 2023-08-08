@@ -136,10 +136,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun corde(){
-
-    }
     private fun getVersion():String{
        return Build.VERSION.RELEASE
     }

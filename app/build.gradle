@@ -46,7 +46,8 @@ dependencies {
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
     implementation "androidx.camera:camera-video:${camerax_version}"
-
+    implementation 'dev.shreyaspatil.MaterialDialog:MaterialDialog:2.2.3'
+    implementation 'com.airbnb.android:lottie:3.3.6'
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
     implementation 'androidx.preference:preference:1.2.0'

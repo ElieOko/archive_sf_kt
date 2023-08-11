@@ -15,25 +15,21 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ExperimentalGetImage
-import com.android.volley.Request
+import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
-import com.example.archive_sfc.constante.Message
 import com.example.archive_sfc.constante.Route
 import com.example.archive_sfc.constante.UserData
 import com.example.archive_sfc.databinding.ActivityLoginBinding
-import com.example.archive_sfc.models.room.Branch
-import com.example.archive_sfc.models.room.Directory
 import com.example.archive_sfc.models.room.User
-import com.example.archive_sfc.room.branch.viewModel.BranchViewModel
-import com.example.archive_sfc.room.branch.viewModel.BranchViewModelFactory
 import com.example.archive_sfc.utils.url_fusio
 import com.example.archive_sfc.room.user.viewmodel.UserViewModel
 import com.example.archive_sfc.room.user.viewmodel.UserViewModelFactory
 import com.example.archive_sfc.volley.Singleton
+import com.google.android.material.animation.AnimationUtils
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-
+import dev.shreyaspatil.MaterialDialog.MaterialDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -43,6 +39,8 @@ import org.json.JSONObject
 @ExperimentalGetImage @RequiresApi(Build.VERSION_CODES.M)
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
+
+    private lateinit var mDialog: MaterialDialog.Builder
 
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory((application as UserApplication).repository)
@@ -107,14 +105,22 @@ class LoginActivity : AppCompatActivity() {
             Toast.LENGTH_LONG
         ).show()
         }
-
         }
     }
-
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun offline(_user: User, view:View): Any? {
         var check : Any? = null
+//        val mDialog =  MaterialDialog.Builder(this).build().animationView.startAnimation(
+//            AnimationUtils.loadAnimation(this,R.raw.animation_load))
+//        if(animation != 0)
+//            mDialog.setAnimation(animation)
+//        mDialog.setTitle(title)
+//        mDialog.setMessage(message)
+//        mDialog.setPositiveButton("Ok"){ dialog, _ ->
+//            dialog.dismiss()
+//        }
+//        mDialog.build().show()
         GlobalScope.launch {
             val test = userViewModel.auth(_user)
             if (test != null) {
@@ -128,8 +134,8 @@ class LoginActivity : AppCompatActivity() {
                 Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             }
-
         }
+        //mDialogConnexion("AuthError","User not found")
         binding.username.isEnabled = true
         binding.password.isEnabled = true
         binding.buttonLogin.isEnabled = true
@@ -138,61 +144,59 @@ class LoginActivity : AppCompatActivity() {
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun online(user: User, view:View) {
+        mDialog =  MaterialDialog.Builder(this)
         binding.username.isEnabled = false
         binding.password.isEnabled = false
         binding.buttonLogin.isEnabled = false
+
         if(!checkingConnexion()) run {
-            Message.connexion_msg = "Connexion failed"
-            Snackbar.make(view, Message.connexion_msg, Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            mDialogConnexion("Connexion failed","Connection error, make sure you are connected to the internet",R.raw.animation_failed_connexion)
             binding.username.isEnabled = true
             binding.password.isEnabled = true
             binding.buttonLogin.isEnabled = true
             return@run
         }
-
-        val data  = JSONObject()
-        data.put("username",user.username)
-        data.put("password",user.password)
-
-
-        GlobalScope.launch(Dispatchers.Main) {
-            val jsonObjectRequest = JsonObjectRequest(
-                Request.Method.POST, url_fusio(Route.url,Route.userauth_endpoint), data,
-                { response ->
-                    Log.d("Viva","Retour -> $response")
-                    Snackbar.make(view, "Connecter $response", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                    UserData.name = user.username
-                    UserData.password = user.password
-
-                    val responseObject: User = Gson().fromJson(response.toString(),object : TypeToken<User>() {}.type)
-
-                    responseObject.password = user.password
-                    Log.d("Login","Oups->> $responseObject")
+        else{
+            val data  = JSONObject()
+            data.put("username",user.username)
+            data.put("password",user.password)
+            mDialog.setAnimation(R.raw.animation_load)
+            mDialog.setMessage("Chargement")
+            mDialog.setCancelable(false)
+            GlobalScope.launch(Dispatchers.Main) {
+                val jsonObjectRequest = JsonObjectRequest(
+                    Request.Method.POST, url_fusio(Route.url,Route.userauth_endpoint), data,
+                    { response ->
+                        Log.d("Viva","Retour -> $response")
+                        Snackbar.make(view, "Connecter $response", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show()
+                        UserData.name = user.username
+                        UserData.password = user.password
+                        val responseObject: User = Gson().fromJson(response.toString(),object : TypeToken<User>() {}.type)
+                        responseObject.password = user.password
+                        Log.d("Login","Oups->> $responseObject")
                         userViewModel.insert(responseObject)
-
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
-                    finish()
-                },
-                { error ->
-                    binding.username.isEnabled = true
-                    binding.password.isEnabled = true
-                    binding.buttonLogin.isEnabled = true
-                    Toast.makeText(applicationContext,"Error",Toast.LENGTH_LONG).show()
-                    Snackbar.make(view, "Bug $error", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                }
-            )
-
-            Singleton.getInstance(applicationContext).addToRequestQueue(jsonObjectRequest)
+                        mDialog.build().dismiss()
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        startActivity(intent)
+                        finish()
+                    },
+                    { error ->
+                        mDialog.build().dismiss()
+                       if(error.toString() == "com.android.volley.ClientError"){
+                           mDialogConnexion("Error","We couldn't find the server",R.raw.animation_srv)
+                       }
+                        binding.username.isEnabled = true
+                        binding.password.isEnabled = true
+                        binding.buttonLogin.isEnabled = true
+                        Toast.makeText(applicationContext,"Error",Toast.LENGTH_LONG).show()
+                    }
+                )
+                Singleton.getInstance(applicationContext).addToRequestQueue(jsonObjectRequest)
         }
-
-
+        }
     }
-
 
     private fun auto(user: User, view:View) {
         val verify = offline(user,view)
@@ -225,6 +229,17 @@ class LoginActivity : AppCompatActivity() {
             }
         }
         return isAvailable
+    }
+    private fun mDialogConnexion(title:String ="",message: String = "",animation :Int = 0 ){
+         mDialog =  MaterialDialog.Builder(this)
+        if(animation != 0)
+            mDialog.setAnimation(animation)
+        mDialog.setTitle(title)
+        mDialog.setMessage(message)
+        mDialog.setPositiveButton("Ok"){ dialog, _ ->
+            dialog.dismiss()
+        }
+        mDialog.build().show()
     }
 
 }

@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -23,12 +24,17 @@ import androidx.core.content.ContextCompat
 import com.example.archive_sfc.constante.ImageParcours
 import com.example.archive_sfc.databinding.ActivityCameraBinding
 import com.example.archive_sfc.models.FileState
+import com.example.archive_sfc.room.Converters
+import com.example.archive_sfc.room.compressionImage
 import com.example.archive_sfc.utils.FileUtil
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import dev.shreyaspatil.MaterialDialog.MaterialDialog
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
@@ -105,7 +111,6 @@ class CameraActivity : AppCompatActivity() {
         imageAnalysis.setAnalyzer(cameraExecutor){
             processImageProxy(scanner,it)
         }
-
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -148,13 +153,11 @@ companion object{
             }
         }
     }
-
     private fun toggleFlashEvent(camera: Camera){
         mBinding.flash.setOnClickListener {
             setFlashIcon(camera)
         }
     }
-
     private fun setFlashIcon(camera: Camera) {
         if(camera.cameraInfo.hasFlashUnit()){
             if (camera.cameraInfo.torchState.value == 0) {
@@ -164,9 +167,7 @@ companion object{
             else {
                 camera.cameraControl.enableTorch(false)
                 mBinding.flash.setImageResource(R.drawable.round_flash_on_24)
-
             }
-
         }
         else{
             Thread {
@@ -176,52 +177,12 @@ companion object{
                     Toast.LENGTH_LONG
                 ).show()
             }
-
         }
     }
-
-//    private fun takePicture(imageCapture: ImageCapture) {
-//        val file = File(Environment.getExternalStorageDirectory(),"${System.currentTimeMillis()}.jpg")
-//        val outputfileOption = ImageCapture.OutputFileOptions.Builder(file).build()
-//        imageCapture.takePicture(/* outputFileOptions = */ outputfileOption, /* executor = */
-//            Executors.newCachedThreadPool(),
-//            /* imageSavedCallback = */
-//            object : ImageCapture.OnImageSavedCallback {
-//                override fun onError(error: ImageCaptureException)
-//                {
-//                    // insert your code here.
-//                    Thread {
-//                        Toast.makeText(applicationContext, "Failed ", Toast.LENGTH_LONG).show()
-//                        Log.d("TEST DATA ERROR SAVE = ", "${error.message}")
-//                    }
-//                    Toast.makeText(applicationContext, "Failed ", Toast.LENGTH_LONG).show()
-//                    startCamera(cameraFacing)
-//                }
-//                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-//                    // insert your code here.
-//                    Thread {
-//                        Toast.makeText(
-//                            applicationContext,
-//                            "Save image ${file.path}",
-//                            Toast.LENGTH_LONG
-//                        ).show()
-//                    }
-//                    Toast.makeText(
-//                        applicationContext,
-//                        "Save image ${file.path}",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                    Log.d("TEST DATA = ","${file.path}")
-//                    startCamera(cameraFacing)
-//                }
-//            })
-//    }
-
 
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
-
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
             .format(System.currentTimeMillis())
@@ -252,17 +213,23 @@ companion object{
 
                 override fun
                         onImageSaved(output: ImageCapture.OutputFileResults){
-                    val uriSave: Uri? =  output.savedUri
-                    val file = FileUtil.from(applicationContext,uriSave)
-                    val msg = "Photo capture succeeded: ${file.name}"
-                    val fileData = FileState(file.name,file,uriSave)
-                    ImageParcours.stdList.add(fileData)
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@CameraActivity, ArchiveActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
-                    finish()
-                    Log.d("", msg)
+                    GlobalScope.launch {
+                        val uriSave: Uri? =  output.savedUri
+                        val file = FileUtil.from(applicationContext,uriSave)
+                        val msg = "Photo capture succeeded: ${file.name}"
+                        val bitmap =  Converters().toBitmap(compressionImage(Converters().fromBitmap(BitmapFactory.decodeFile(file?.path))))
+                        val fileData = FileState(file.name,bitmap,uriSave,file)
+                        ImageParcours.stdList.add(fileData)
+                        Log.d("", msg)
+                        val intent = Intent(this@CameraActivity, ArchiveActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        startActivity(intent)
+                        finish()
+                    }
+                    MaterialDialog.Builder(this@CameraActivity)
+                        .setAnimation(R.raw.animation_load)
+                        .build().show()
+                    Toast.makeText(baseContext, "Photo capture succeeded", Toast.LENGTH_SHORT).show()
                 }
             }
         )

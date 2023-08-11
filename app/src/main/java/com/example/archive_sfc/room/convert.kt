@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream
 
 
 class Converters {
-
     @TypeConverter
     fun fromBitmap(bitmap: Bitmap): ByteArray {
         val outputStream = ByteArrayOutputStream()

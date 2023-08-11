@@ -13,7 +13,8 @@ interface IPictureDao{
 
     @Query("SELECT * FROM picture")
     fun getAll(): Flow<List<Picture>>
-
+    @Query("SELECT * FROM picture WHERE InvoiceFId LIKE :InvoiceFId")
+    fun getByInvoiceId(InvoiceFId:Int): Flow<List<Picture>>
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(picture: Picture)
 }

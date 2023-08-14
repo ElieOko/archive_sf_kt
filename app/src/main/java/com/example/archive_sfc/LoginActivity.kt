@@ -25,7 +25,6 @@ import com.example.archive_sfc.utils.url_fusio
 import com.example.archive_sfc.room.user.viewmodel.UserViewModel
 import com.example.archive_sfc.room.user.viewmodel.UserViewModelFactory
 import com.example.archive_sfc.volley.Singleton
-import com.google.android.material.animation.AnimationUtils
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

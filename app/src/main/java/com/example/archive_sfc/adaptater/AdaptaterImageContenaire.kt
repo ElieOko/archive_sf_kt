@@ -17,7 +17,9 @@ class AdaptaterImageContenaire : RecyclerView.Adapter<AdaptaterImageContenaire.V
         this.stdList = items
         notifyDataSetChanged()
     }
-
+    fun getPicture(): ArrayList<FileState> {
+       return this.stdList
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(

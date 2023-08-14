@@ -21,6 +21,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.findNavController
 import com.example.archive_sfc.constante.ImageParcours
 import com.example.archive_sfc.databinding.ActivityCameraBinding
 import com.example.archive_sfc.models.FileState
@@ -33,6 +34,8 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dev.shreyaspatil.MaterialDialog.MaterialDialog
+import id.zelory.compressor.Compressor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -128,7 +131,7 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 companion object{
-    private var onScan :((barcode:List<Barcode>)->Unit)?= null
+    var onScan :((barcode:List<Barcode>)->Unit)?= null
     fun startScanner(context: Context, onScan:(barcode:List<Barcode>)->Unit) {
         this.onScan = onScan
         Intent(context,CameraActivity::class.java).also {
@@ -217,7 +220,8 @@ companion object{
                         val uriSave: Uri? =  output.savedUri
                         val file = FileUtil.from(applicationContext,uriSave)
                         val msg = "Photo capture succeeded: ${file.name}"
-                        val bitmap =  Converters().toBitmap(compressionImage(Converters().fromBitmap(BitmapFactory.decodeFile(file?.path))))
+                        val compressedImageFile = Compressor.compress(applicationContext, file, Dispatchers.Main)
+                        val bitmap =  BitmapFactory.decodeFile(compressedImageFile?.path)
                         val fileData = FileState(file.name,bitmap,uriSave,file)
                         ImageParcours.stdList.add(fileData)
                         Log.d("", msg)
@@ -226,9 +230,6 @@ companion object{
                         startActivity(intent)
                         finish()
                     }
-                    MaterialDialog.Builder(this@CameraActivity)
-                        .setAnimation(R.raw.animation_load)
-                        .build().show()
                     Toast.makeText(baseContext, "Photo capture succeeded", Toast.LENGTH_SHORT).show()
                 }
             }

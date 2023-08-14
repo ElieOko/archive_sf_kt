@@ -9,22 +9,31 @@
         android:id="@+id/nav_home"
         android:name="com.example.archive_sfc.ui.home.HomeFragment"
         android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
-
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_nav_home_to_archiveEditFragment"
+            app:destination="@id/archiveEditFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
+    </fragment>
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.example.archive_sfc.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
-
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.example.archive_sfc.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/archiveEditFragment"
+        android:name="com.example.archive_sfc.ui.archive.ArchiveEditFragment"
+        android:label="fragment_archive_edit"
+        tools:layout="@layout/fragment_archive_edit" >
+        <action
+            android:id="@+id/action_archiveEditFragment_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.example.archive_sfc.ui.camera.CameraFragment"
         android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" />
+        tools:layout="@layout/fragment_camera" >
+        <action
+            android:id="@+id/action_cameraFragment_to_archiveEditFragment"
+            app:destination="@id/archiveEditFragment" />
+    </fragment>
+
 </navigation>

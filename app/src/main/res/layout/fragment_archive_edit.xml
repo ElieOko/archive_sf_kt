@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:scrollbars="none"
+    tools:context=".ui.archive.ArchiveEditFragment">
+    <LinearLayout
+        android:padding="12dp"
+        android:id="@+id/archive_edit"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/globe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="2dp"
+            android:orientation="vertical">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                tools:visibility="gone"
+                android:orientation="horizontal"
+                tools:ignore="MissingConstraints" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Image"
+                android:id="@+id/ImageSelect"
+                />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/selectGalery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:backgroundTint="#080333"
+                    app:tint="#fff"
+                    android:layout_alignParentEnd="true"
+                    app:srcCompat="@drawable/ic_menu_gallery" />
+
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/takePicture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#080333"
+                    app:tint="#fff"
+                    app:srcCompat="@drawable/ic_menu_camera" />
+
+            </RelativeLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/InvoiceCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="1"
+                    android:inputType="text"
+                    android:textColorHint="#1E1D1D"
+                    android:hint="Code"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/InvoiceDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="18"
+                    android:inputType="text"
+                    android:hint="Description"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                app:startIconDrawable="@drawable/ic_menu_gallery"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/InvoiceBareCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="1"
+                    android:paddingRight="30dp"
+                    android:inputType="text"
+                    android:hint="Bare code"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/InvoiceDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="1"
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:hint="Date"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:helperTextTextColor="#D61D1D"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <AutoCompleteTextView
+                    android:id="@+id/folderIdSelect"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Select Folder"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:helperTextTextColor="#D61D1D"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                android:id="@+id/subfolder"
+                android:visibility="gone"
+                android:layout_height="wrap_content">
+                <AutoCompleteTextView
+                    android:id="@+id/subfolderIdSeflect"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Subfolder"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_height="wrap_content">
+                <AutoCompleteTextView
+                    android:id="@+id/selectKey"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Select Key"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/clientName"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="1"
+                    android:inputType="text"
+                    android:hint="Client name"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:layout_width="match_parent"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/clientPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="1"
+                    android:inputType="phone"
+                    android:hint="Client Phone"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:helperTextTextColor="#D61D1D"
+                android:layout_width="match_parent"
+                app:boxStrokeColor="#D61E1E"
+                android:textColorHint="#1E1D1D"
+                android:padding="2dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/InvoiceExpireDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:lines="18"
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:hint="Expire date"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveData"
+                android:paddingTop="12dp"
+                android:layout_width="320dp"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:text="Archive"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
+                android:textStyle="bold"
+                android:backgroundTint="#080333"
+                app:cornerRadius="@dimen/_8sdp" />
+
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+
+</ScrollView>

@@ -99,6 +99,9 @@ dependencies {
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
 
+    implementation ("id.zelory:compressor:3.0.1")
+
     kapt("androidx.room:room-compiler:$room_version")
+
 
 }

@@ -7,12 +7,14 @@ import android.icu.util.Calendar
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.camera.core.ExperimentalGetImage
 import androidx.core.widget.addTextChangedListener
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.archive_sfc.adaptater.AdaptaterImageContenaire
@@ -41,7 +43,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@ExperimentalGetImage class ArchiveActivity : AppCompatActivity() {
+@ExperimentalGetImage
+class ArchiveActivity : AppCompatActivity() {
 
     private lateinit var mBinding : ActivityArchiveBinding
     private lateinit var  recyclerView: RecyclerView
@@ -74,6 +77,7 @@ import java.util.*
             recyclerView.layoutManager = LinearLayoutManager(applicationContext,LinearLayoutManager.HORIZONTAL,true)
             adapterImageContenaire = AdaptaterImageContenaire()
             recyclerView.adapter = adapterImageContenaire
+            Toast.makeText(this,"Stock en encours ->${ImageParcours.stdList.size}",Toast.LENGTH_LONG).show()
             adapterImageContenaire?.addImageInContenaire(ImageParcours.stdList)
 
         val listPicture = pictureViewModel.getAllImages()
@@ -93,6 +97,10 @@ import java.util.*
                     itemsFolder.add(i.DirectoryName)
                 }
             }
+            Log.e("TAG => ","${it.size}")
+        }
+        invoiceViewModel.allInvoice.observe(this){
+            Log.e("TAG invoice => ","${it.size}")
         }
         Toast.makeText(this,"ID USER -> ${Data.user}",Toast.LENGTH_LONG).show()
         optionSelect()
@@ -253,6 +261,7 @@ import java.util.*
             invoiceUniqueId += dateMillisSecond
             if(invoiceCode.isNotEmpty() && selectFolder.isNotEmpty() && selectKey.isNotEmpty()){
                   //
+
                 if(ImageParcours.stdList.size != 0){
                     val invoice = Invoice(
                         InvoiceId = 0,
@@ -286,10 +295,10 @@ import java.util.*
     }
     private fun savePicture(invoiceUniqueId: String) {
         invoiceViewModel.allInvoice.observe(this){
-            it.forEach {invoice ->
+        it.forEach{invoice ->
+
                 if (invoice.invoiceUniqueId == invoiceUniqueId){
                     invoiceFId = invoice.InvoiceId
-                    //Toast.makeText(this,"AWA $invoiceFId",Toast.LENGTH_LONG).show()
                     ImageParcours.stdList.forEach {img->
                         val bitmap = img.bitmap
                         val picture = Picture(
@@ -302,13 +311,16 @@ import java.util.*
                         )
                         pictureViewModel.insert(picture)
                     }
+
                     ImageParcours.stdList.clear()
                     val intent = Intent(this@ArchiveActivity, MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
                     finish()
+                    Log.e("Taille ouo => ","${it.size}")
                 }
-            }
+             }
         }
+
     }
 }

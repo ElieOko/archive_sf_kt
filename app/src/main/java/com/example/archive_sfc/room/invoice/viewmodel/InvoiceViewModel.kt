@@ -19,6 +19,9 @@ class InvoiceViewModel (private val repository: InvoiceRepository) : ViewModel()
     fun insert(invoice: Invoice) = viewModelScope.launch {
         repository.insert(invoice)
     }
+    fun deleteById(InvoiceId:Int) = viewModelScope.launch {
+        repository.deleteById(InvoiceId)
+    }
 
     fun getAllInvoice(): MutableLiveData<List<Invoice>> {
         viewModelScope.launch {

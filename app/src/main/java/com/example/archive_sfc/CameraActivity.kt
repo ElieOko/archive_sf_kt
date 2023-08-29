@@ -42,6 +42,7 @@ import id.zelory.compressor.Compressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
@@ -241,7 +242,7 @@ companion object{
                         onImageSaved(output: ImageCapture.OutputFileResults){
                     GlobalScope.launch {
                         val uriSave: Uri? =  output.savedUri
-                        val file = FileUtil.from(applicationContext,uriSave)
+                        val file: File = FileUtil.from(applicationContext,uriSave)
                         val msg = "Photo capture succeeded: ${file.name}"
                         val compressedImageFile = Compressor.compress(applicationContext, file, Dispatchers.Main)
                         val bitmap =  BitmapFactory.decodeFile(compressedImageFile?.path)

@@ -17,4 +17,9 @@ interface IInvoiceDao {
     suspend fun update(invoice: Invoice)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(invoice: Invoice)
+
+    @Query("DELETE FROM invoice")
+    suspend fun deleteAll()
+    @Query("DELETE FROM invoice WHERE InvoiceId like :InvoiceId")
+    suspend fun deleteById(InvoiceId:Int)
 }

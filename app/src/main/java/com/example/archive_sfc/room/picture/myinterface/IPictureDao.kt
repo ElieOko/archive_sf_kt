@@ -17,5 +17,11 @@ interface IPictureDao{
     fun getByInvoiceId(InvoiceFId:Int): Flow<List<Picture>>
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(picture: Picture)
+
+    @Query("DELETE FROM picture")
+    suspend fun deleteAll()
+
+    @Query("DELETE FROM picture WHERE InvoiceFId LIKE :InvoiceFId")
+    suspend fun deleteGetById(InvoiceFId:Int)
 }
 

@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 
 @TypeConverters(Converters::class)
-@Database(entities = [User::class, Branch::class, Directory::class, UserDirectory::class, InvoiceKey::class,Invoice::class,Picture::class], version = 19, exportSchema = false)
+@Database(entities = [User::class, Branch::class, Directory::class, UserDirectory::class, InvoiceKey::class,Invoice::class,Picture::class], version = 22, exportSchema = false)
 public abstract class UserRoomDatabase : RoomDatabase() {
 
     abstract fun userDao(): IUserDao

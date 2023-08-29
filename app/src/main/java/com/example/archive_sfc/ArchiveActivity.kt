@@ -40,6 +40,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.barcode.common.Barcode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -237,7 +239,6 @@ class ArchiveActivity : AppCompatActivity() {
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton("Ok") { dialog, _ ->
-                // Respond to positive button press
                 dialog.dismiss()
             }
             .setCancelable(true)
@@ -247,7 +248,7 @@ class ArchiveActivity : AppCompatActivity() {
     private fun storageLocalData(){
 
         mBinding.saveData.setOnClickListener {
-            Toast.makeText(this,"${Data.user!!.id}",Toast.LENGTH_LONG).show()
+            Toast.makeText(this,"${Data.user!!.UserId}",Toast.LENGTH_LONG).show()
             val invoiceCode = mBinding.InvoiceCode.text.toString()
             val invoiceBarCode= mBinding.InvoiceBareCode.text.toString()
             val invoiceDesc = mBinding.InvoiceDesc.text.toString()
@@ -259,7 +260,7 @@ class ArchiveActivity : AppCompatActivity() {
             val expireDate = mBinding.InvoiceExpireDate.text.toString()
             val versionAndroid = Build.VERSION.RELEASE
             val branchFId = Data.user!!.BranchFId as Int
-            val userFId: Int = Data.user!!.id
+            val userFId: Int = Data.user!!.UserId
             val dateMillisSecond = (SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
                 .format(System.currentTimeMillis())).toString()
             var invoiceUniqueId = Data.user?.let { it1 -> chiffreDeCesarCryptageEtDecryptage(key = 8,mot = it1.username) }
@@ -326,5 +327,11 @@ class ArchiveActivity : AppCompatActivity() {
              }
         }
 
+    }
+    private fun fileToByteArray(file: File): ByteArray {
+        val inputStream = FileInputStream(file)
+        val byteArray = inputStream.readBytes()
+        inputStream.close()
+        return byteArray
     }
 }

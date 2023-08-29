@@ -14,6 +14,12 @@ class InvoiceRepository (private val invoiceDao: IInvoiceDao)  {
 
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
+    suspend fun deleteById(InvoiceId:Int){
+        deleteById(InvoiceId)
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
     suspend fun update(invoice: Invoice) {
         invoiceDao.update(invoice)
     }

@@ -16,12 +16,12 @@ import com.example.archive_sfc.models.room.Invoice
 import com.example.archive_sfc.models.room.Picture
 
 class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>(){
-    private var sdtListInvoice : List<Invoice> = ArrayList()
+    var sdtListInvoice : List<Invoice> = ArrayList()
     private var sdt : ArrayList<InvoicePicture> = ArrayList()
 
-    private var stdListImage :ArrayList<List<Picture>> = ArrayList()
+    var stdListImage :ArrayList<List<Picture>> = ArrayList()
     private var onClickItem :((Invoice)->Unit)? =null
-    private var onClickDeleteItem :((Picture)->Unit)? =null
+    private var onClickDeleteItem :(()->Unit)? =null
     private var onLongClickItem :((Invoice)->Unit)? =null
     val listTemp :ArrayList<List<Picture>> = ArrayList()
     private var isEnabled = false
@@ -32,9 +32,10 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
     fun  setOnClickItem(callback: (Invoice)->Unit){
         this.onClickItem = callback
     }
-    fun  setOnClickDeleteitem(callback: (Picture)->Unit){
+    fun  setOnClickDeleteitem(callback: ()->Unit){
         this.onClickDeleteItem = callback
     }
+
     fun addImageInContenaire(
         invoice: List<Invoice>,
         listPicture: ArrayList<List<Picture>>
@@ -72,7 +73,7 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
        return sdtListInvoice.size
     }
     fun getSize():Int{
-        return listTemp.size
+        return sdtListInvoice.size
     }
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private var image = view.findViewById<ImageView>(R.id.imageView)
@@ -92,7 +93,6 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
                 val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.context, color))
                 card.backgroundTintList = colorStateList
             }
-
         }
     }
     }

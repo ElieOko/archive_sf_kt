@@ -237,7 +237,7 @@ class ArchiveEditFragment : Fragment() {
     private fun storageLocalData(){
 
         mBinding.saveData.setOnClickListener {
-            Toast.makeText(requireContext(),"${Data.user!!.id}",Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(),"${Data.user!!.UserId}",Toast.LENGTH_LONG).show()
             val invoiceCode = mBinding.InvoiceCode.text.toString()
             val invoiceBarCode= mBinding.InvoiceBareCode.text.toString()
             val invoiceDesc = mBinding.InvoiceDesc.text.toString()
@@ -249,7 +249,7 @@ class ArchiveEditFragment : Fragment() {
             val expireDate = mBinding.InvoiceExpireDate.text.toString()
             val versionAndroid = Build.VERSION.RELEASE
             val branchFId = Data.user!!.BranchFId as Int
-            val userFId: Int = Data.user!!.id
+            val userFId: Int = Data.user!!.UserId
             val dateMillisSecond = (SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
                 .format(System.currentTimeMillis())).toString()
             var invoiceUniqueId = Data.user?.let { it1 -> chiffreDeCesarCryptageEtDecryptage(key = 8,mot = it1.username) }

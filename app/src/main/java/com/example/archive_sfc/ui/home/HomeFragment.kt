@@ -1,20 +1,27 @@
 package com.example.archive_sfc.ui.home
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.camera.core.ExperimentalGetImage
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.example.archive_sfc.CameraActivity
 import com.example.archive_sfc.LoginActivity
@@ -24,8 +31,10 @@ import com.example.archive_sfc.adaptater.AdaptaterImageStore
 import com.example.archive_sfc.constante.Data
 import com.example.archive_sfc.constante.Route
 import com.example.archive_sfc.constante.UserData
+import com.example.archive_sfc.constante.UserData.keys
 import com.example.archive_sfc.databinding.FragmentHomeBinding
 import com.example.archive_sfc.databinding.NavHeaderMainBinding
+import com.example.archive_sfc.models.ApiUser
 import com.example.archive_sfc.models.InvoicePicture
 import com.example.archive_sfc.models.room.*
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModel
@@ -45,15 +54,20 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dev.shreyaspatil.MaterialDialog.MaterialDialog
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 
 @ExperimentalGetImage
 class HomeFragment : Fragment() {
-    private lateinit var binding: FragmentHomeBinding
+    private  var binding: FragmentHomeBinding? = null
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var adapterImageStore: AdaptaterImageStore? = null
     private var recyclerView: RecyclerView? = null
     private var actionMode: ActionMode? = null
     private val selectedItems = mutableListOf<Invoice>()
+    private val Context.dataStore by preferencesDataStore("user_preferences")
+    private val tag = "HomeFragment"
     private val pictureViewModel: PictureViewModel by viewModels {
         PictureViewModelFactory((activity?.application as UserApplication).repositoryPicture)
     }
@@ -78,8 +92,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navigationView: NavigationView = binding.navView
+        val drawerLayout: DrawerLayout = binding!!.drawerLayout
+        val navigationView: NavigationView = binding!!.navView
         val headerView = navigationView.getHeaderView(0)
         val navViewHeaderBinding: NavHeaderMainBinding = NavHeaderMainBinding.bind(headerView)
         navViewHeaderBinding.name.text = UserData.name
@@ -89,7 +103,7 @@ class HomeFragment : Fragment() {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
             ), drawerLayout
         )
-        binding.navView.setNavigationItemSelectedListener {
+        binding?.navView?.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.menu_logout -> {
                     val intent = Intent(requireContext(), LoginActivity::class.java)
@@ -109,12 +123,12 @@ class HomeFragment : Fragment() {
         // The usage of an interface lets you inject your own implementation
         initRecy()
         manageEvent()
-        return binding.root
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.toolbar.inflateMenu(R.menu.main)
-        binding.toolbar.setOnMenuItemClickListener {
+        binding?.toolbar?.inflateMenu(R.menu.main)
+        binding?.toolbar?.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_save_all -> {
                     sendAllInvoice()
@@ -127,7 +141,7 @@ class HomeFragment : Fragment() {
 
     private fun initRecy() {
 // 123456789//MA
-        recyclerView = binding.recyclerViewImage
+        recyclerView = binding?.recyclerViewImage
         adapterImageStore = AdaptaterImageStore()
         recyclerView?.layoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView?.adapter = adapterImageStore
@@ -142,8 +156,17 @@ class HomeFragment : Fragment() {
                 ).show()
             }
         }
+//        lifecycleScope.launch{
+//           val red = readDataStore(keys)
+//            Log.e(tag,"Depuis le store $red")
+//        }
     }
 
+    private suspend fun readDataStore(key:String): ApiUser?{
+        val getKey: Preferences.Key<String> = stringPreferencesKey(key)
+        val preferences = requireContext().dataStore.data.first()
+        return preferences[getKey] as ApiUser
+    }
     private inner class SelectionCallback : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
             // Inflating the menu resource
@@ -162,6 +185,13 @@ class HomeFragment : Fragment() {
                 R.id.delete -> {
                     // Perform action on selected items (e.g., delete)
                     // deleteSelectedItems()
+
+                        selectedItems.forEach {
+                            invoiceViewModel.deleteById(it.InvoiceId)
+                        }
+
+
+                    selectedItems
                     mode.finish() // Finish the action mode
                     return true
                 }
@@ -215,13 +245,13 @@ class HomeFragment : Fragment() {
                 findNavController().navigate(R.id.action_nav_home_to_galleryFragment, bundle)
             }
         }
-        binding.fab.setOnClickListener {
+        binding?.fab?.setOnClickListener {
             val intent = Intent(requireContext(), CameraActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             activity?.finish()
         }
-        binding.Sync.setOnClickListener {
+        binding?.Sync?.setOnClickListener {
             syncDirectory()
             syncInvoiceKey()
         }
@@ -257,6 +287,49 @@ class HomeFragment : Fragment() {
         mDialog.setAnimation(R.raw.animation_refresh)
             .setTitle(msg)
             .setPositiveButton("Okey"){dialog,_->
+                Log.w(tag,"--->${adapterImageStore?.sdtListInvoice}")
+                Log.i(tag,"--->${adapterImageStore?.stdListImage}")
+               // MultipartRequest
+                adapterImageStore?.sdtListInvoice?.forEach {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        val data = JSONObject()
+                        data.put("InvoiceCode", it.invoiceCode)
+                        data.put("InvoiceDesc", "")
+                        data.put("InvoiceBarCode", it.invoiceBarCode)
+                        data.put("UserFId", it.UserFId)
+                        data.put("DirectoryFId", it.DirectoryFId)
+                        data.put("BranchFId", it.BranchFId)
+                        data.put("InvoiceDate", it.invoiceDate)
+                        data.put("InvoicePath", it.invoicePath)
+                        data.put("AndroidVersion", it.androidVersion)
+                        data.put("InvoiceUniqueId", it.invoiceUniqueId)
+                        data.put("ClientName", it.clientName)
+                        data.put("ClientPhone", it.clientPhone)
+                        data.put("ExpiredDate", it.expiredDate)
+                        val jsonObjectRequest = JsonObjectRequest(
+                            Request.Method.POST,
+                            url_fusio(Route.url, Route.postInvoice_endpoint),
+                            data,
+                            { response ->
+                                Log.e(tag, "$response")
+                            },
+                            { error ->
+                                Log.e(tag, "$error")
+                            })
+                        Singleton.getInstance(requireContext()).addToRequestQueue(jsonObjectRequest)
+                    }
+
+                }
+
+
+//                adapterImageStore?.stdListImage?.get(0)?.forEach{ img->
+//
+//                    Log.e(tag,"${img.contentFile}")
+//                    val stream = ByteArrayOutputStream()
+//                    img.contentFile?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+//                    val byteArray = stream.toByteArray()
+//                    Log.e(tag,"___****$byteArray")
+//                }
                 dialog.dismiss()
             }
         mDialog.build().show()
@@ -323,10 +396,35 @@ class HomeFragment : Fragment() {
         var msg = "Nothing data to collection invoice"
 
         if( adapterImageStore?.getSize()!= 0){
-            msg = "Data in collection invoice picture sum ${adapterImageStore?.getSize()} "
+            msg = "Data in collection invoice ${adapterImageStore?.getSize()} items"
         }
         return msg
     }
+
+    override fun onPause() {
+        super.onPause()
+        Log.e(tag,"onPause")
+    }
+    override fun onStop() {
+        super.onStop()
+        Log.e(tag,"onStop")
+    }
+    override fun onStart() {
+        super.onStart()
+        Log.e(tag,"onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.e(tag,"onResume")
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e(tag,"onDestroy")
+        binding = null
+
+    }
+
 
 //    override fun onSupportNavigateUp(): Boolean {
 //        val navController = findNavController(R.id.nav_host_fragment_content_main)

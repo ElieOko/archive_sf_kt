@@ -8,6 +8,15 @@ import kotlinx.coroutines.flow.Flow
 class InvoiceRepository (private val invoiceDao: IInvoiceDao)  {
     val allInvoice: Flow<List<Invoice>> = invoiceDao.getAll()
 
+    fun getById(invoiceId: Int): Invoice?{
+        return invoiceDao.getById(invoiceId)
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun update(invoice: Invoice) {
+        invoiceDao.update(invoice)
+    }
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
     suspend fun insert(invoice: Invoice) {

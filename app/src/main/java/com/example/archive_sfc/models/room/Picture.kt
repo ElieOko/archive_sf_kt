@@ -13,6 +13,8 @@ data class Picture(
     @ColumnInfo(name = "picturePath") val picturePath: String,
     @ColumnInfo(name = "publicUrl", defaultValue = "") val PublicUrl: String,
     @ColumnInfo(name = "contentFile") var contentFile: Bitmap? = null,
+    @ColumnInfo(name = "isEnabled",defaultValue = "false") var isEnabled: Boolean = false,
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB, defaultValue = "test") var image: ByteArray? = null
 //    @ColumnInfo(name = "pictureOriginalName") var pictureOriginalName: Bitmap? = null,
 )
 

@@ -1,148 +1,335 @@
 package com.example.archive_sfc.ui.home
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.camera.core.ExperimentalGetImage
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.viewModelScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.example.archive_sfc.CameraActivity
+import com.example.archive_sfc.LoginActivity
+import com.example.archive_sfc.R
 import com.example.archive_sfc.UserApplication
 import com.example.archive_sfc.adaptater.AdaptaterImageStore
 import com.example.archive_sfc.constante.Data
+import com.example.archive_sfc.constante.Route
+import com.example.archive_sfc.constante.UserData
 import com.example.archive_sfc.databinding.FragmentHomeBinding
-import com.example.archive_sfc.models.room.Invoice
-import com.example.archive_sfc.models.room.Picture
+import com.example.archive_sfc.databinding.NavHeaderMainBinding
+import com.example.archive_sfc.models.InvoicePicture
+import com.example.archive_sfc.models.room.*
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModel
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModelFactory
 import com.example.archive_sfc.room.invoice.viewmodel.InvoiceViewModel
 import com.example.archive_sfc.room.invoice.viewmodel.InvoiceViewModelFactory
+import com.example.archive_sfc.room.invoicekey.viewmodel.InvoiceKeyViewModel
+import com.example.archive_sfc.room.invoicekey.viewmodel.InvoiceKeyViewModelFactory
 import com.example.archive_sfc.room.picture.viewmodel.PictureViewModel
 import com.example.archive_sfc.room.picture.viewmodel.PictureViewModelFactory
-import com.example.archive_sfc.ui.gallery.GalleryViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.archive_sfc.room.user.viewmodel.UserViewModel
+import com.example.archive_sfc.room.user.viewmodel.UserViewModelFactory
+import com.example.archive_sfc.utils.url_fusio
+import com.example.archive_sfc.volley.Singleton
+import com.google.android.material.navigation.NavigationView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import dev.shreyaspatil.MaterialDialog.MaterialDialog
+import kotlinx.coroutines.*
 
+@ExperimentalGetImage
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
-    private var adapterImageStore : AdaptaterImageStore? =null
-    private var  recyclerView: RecyclerView? = null
-    val pictureViewModel: PictureViewModel by viewModels {
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private var adapterImageStore: AdaptaterImageStore? = null
+    private var recyclerView: RecyclerView? = null
+    private var actionMode: ActionMode? = null
+    private val selectedItems = mutableListOf<Invoice>()
+    private val pictureViewModel: PictureViewModel by viewModels {
         PictureViewModelFactory((activity?.application as UserApplication).repositoryPicture)
     }
     private val directoryViewModel: DirectoryViewModel by viewModels {
-        DirectoryViewModelFactory((activity?.application  as UserApplication).repositoryDirectory)
+        DirectoryViewModelFactory((activity?.application as UserApplication).repositoryDirectory)
     }
     private val invoiceViewModel: InvoiceViewModel by viewModels {
-        InvoiceViewModelFactory((activity?.application  as UserApplication).repositoryInvoice)
+        InvoiceViewModelFactory((activity?.application as UserApplication).repositoryInvoice)
+    }
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory((activity?.application as UserApplication).repository)
     }
 
-    val list :ArrayList<Invoice> = ArrayList()
-    private val listId  = mutableListOf<Int>()
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    private val invoiceKeyViewModel: InvoiceKeyViewModel by viewModels {
+        InvoiceKeyViewModelFactory((activity?.application as UserApplication).repositoryInvoiceKey)
+    }
 
-//        invoiceViewModel.allInvoice.observe(viewLifecycleOwner){
-//            it.forEach {i->
-//                if (!listId.contains(i.InvoiceId)){
-//                    listId.add(i.InvoiceId)
-//                    Log.e("More =>","$listId")
-//                }
-//            }
-//            Log.e("taille ->","${listId.size}")
-//        }
+    val list: ArrayList<Invoice> = ArrayList()
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return  binding.root
+        val drawerLayout: DrawerLayout = binding.drawerLayout
+        val navigationView: NavigationView = binding.navView
+        val headerView = navigationView.getHeaderView(0)
+        val navViewHeaderBinding: NavHeaderMainBinding = NavHeaderMainBinding.bind(headerView)
+        navViewHeaderBinding.name.text = UserData.name
+        navViewHeaderBinding.status.text = UserData.status
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
+            ), drawerLayout
+        )
+        binding.navView.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.menu_logout -> {
+                    val intent = Intent(requireContext(), LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(intent)
+                    true
+                }
+                R.id.menu_serve_url -> {
+
+                    true
+                }
+                else -> {
+                    true
+                }
+            }
+        }
+        // The usage of an interface lets you inject your own implementation
+        initRecy()
+        manageEvent()
+        return binding.root
     }
-/*
- */
-override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-//    directoryViewModel.allDirectory.observe(this){
-//        Log.e("TAG => ","${it.size}")
-//    }
-//    invoiceViewModel.allInvoice.observe(this){
-//        Log.e("TAG invoice => ","${it.size}")
-//    }
-    initRecy()
-    manageEvent()
-}
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.toolbar.inflateMenu(R.menu.main)
+        binding.toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_save_all -> {
+                    sendAllInvoice()
+                }
+            }
+            true
+        }
+        super.onViewCreated(view, savedInstanceState)
+    }
 
     private fun initRecy() {
 // 123456789//MA
         recyclerView = binding.recyclerViewImage
         adapterImageStore = AdaptaterImageStore()
-        recyclerView?.layoutManager = GridLayoutManager(requireContext(),2)
+        recyclerView?.layoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView?.adapter = adapterImageStore
-//        invoiceViewModel.getAllInvoice().observe(requireActivity()){
-//            Log.e("LUI=>","${it.size}")
-//        }
-//        invoiceViewModel.allInvoice.observeForever{
-//            Log.e("LOI=>","${it.size}")
-//        }
         allPicture()
-    }
-    private fun allPicture() {
-        val listInvoicePicture: ArrayList<List<Picture>> = ArrayList<List<Picture>>()
-//        invoiceViewModel.allInvoice.observe(this){
-//            it.forEach {i ->
-//
-//            }
-//            list.addAll(it)
-//        }
-    invoiceViewModel.allInvoice.observe(this){
-        var iteration = 0
-        it.forEach {i->
-            pictureViewModel.getAllImageByInvoice(i.InvoiceId).observe(this){listPicture ->
-                Log.d("Iteration $iteration -->","$it")
-                Log.d("Voir plus grand =>","$listPicture")
-                if(!listInvoicePicture.contains(listPicture)){
-                    Log.e("ICI =>","$listInvoicePicture")
-                    Log.e("Iteration awa ->","Taille ${listInvoicePicture.size}")
-                    listInvoicePicture.addAll(arrayListOf(listPicture))
-                }
-                iteration++
-                if( it.size  == iteration){
-                    //Data.allInvoicePicture.addAll(listInvoicePicture)
-                    Log.e("VRAIMENT TOLEMBI -> ","${it.size}")
-                    Log.e("VRAIMENT TOLEMBI YO -> ","${it}")
-                    adapterImageStore?.addImageInContenaire(it,listInvoicePicture)
-                    ///Log.e("Akoti na ->","Taille Oyo ${listInvoicePicture.size}")
-                    //listInvoicePicture.clear()
-                }
+        userViewModel.user.observe(this) {
+            if (it != null) {
+                Log.d("com", it.toString())
+                Toast.makeText(
+                    requireContext(),
+                    it.username,
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
 
-//            it.forEach {i->
-//
+    private inner class SelectionCallback : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            // Inflating the menu resource
+            val inflater = mode.menuInflater
+            inflater.inflate(R.menu.action_mode, menu)
+            return true
+        }
 
-//            }
-//        listId.forEach {
-//            val x= pictureViewModel.getAllImageByInvoice(it)
-//            Log.e("ckeck ","$x")
-//        }
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.title = "${selectedItems.size} tailles"
+            return true
+        }
 
-    }
-    private fun call(list: ArrayList<Invoice>) {
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+            when (item.itemId) {
+                R.id.delete -> {
+                    // Perform action on selected items (e.g., delete)
+                    // deleteSelectedItems()
+                    mode.finish() // Finish the action mode
+                    return true
+                }
+            }
+            return false
+        }
 
-        Toast.makeText(requireContext(),"${list.size} invoice",Toast.LENGTH_LONG).show()
-        //Toast.makeText(requireContext(),"${listInvoicePicture.size} invoice-list-picture",Toast.LENGTH_LONG).show()
-    }
-    private fun manageEvent(){
-        adapterImageStore?.setOnClickItem {
-            Toast.makeText(requireContext(),it[0].pictureName,Toast.LENGTH_LONG).show()
+        override fun onDestroyActionMode(mode: ActionMode) {
+            actionMode = null
         }
     }
-    fun sizeAdd() : Int? {
-       return adapterImageStore?.getSize()
+
+    private fun startActionMode() {
+        actionMode = activity?.startActionMode(SelectionCallback())
     }
+
+    private fun allPicture() {
+        val listInvoicePicture: ArrayList<List<Picture>> = ArrayList()
+        val user = User(0, UserData.name, UserData.password)
+        setUser(user)
+        invoiceViewModel.allInvoice.observe(this) {
+            var iteration = 0
+            it.forEach { i ->
+                pictureViewModel.getAllImageByInvoice(i.InvoiceId).observe(this) { listPicture ->
+                    Log.d("Iteration $iteration -->", "$it")
+                    if (!listInvoicePicture.contains(listPicture)) {
+                        Log.e("ICI =>", "$listInvoicePicture")
+                        listInvoicePicture.addAll(arrayListOf(listPicture))
+                       // sdt.add(stockInvoicePicture)
+                    }
+                    iteration++
+                    if (it.size == iteration) {
+                        Log.e("CONTAINS-> ", it.toString())
+                        adapterImageStore?.addImageInContenaire(it, listInvoicePicture)
+                        //adapterImageStore?.addImageInContenaire(stockInvoicePicture)
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun manageEvent() {
+        val bundle = Bundle()
+        adapterImageStore?.setOnClickItem {
+            if (actionMode != null) {
+                toggleSelection(it)
+            } else {
+                // Handle regular item click
+                bundle.putInt("invoiceId", it.InvoiceId)
+                findNavController().navigate(R.id.action_nav_home_to_galleryFragment, bundle)
+            }
+        }
+        binding.fab.setOnClickListener {
+            val intent = Intent(requireContext(), CameraActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            activity?.finish()
+        }
+        binding.Sync.setOnClickListener {
+            syncDirectory()
+            syncInvoiceKey()
+        }
+        adapterImageStore?.onLongClickItem {
+            startActionMode()
+            toggleSelection(it)
+        }
+    }
+    private fun toggleSelection(invoice: Invoice) {
+        if (selectedItems.contains(invoice)) {
+            selectedItems.remove(invoice)
+            invoice.isSelect = false
+            invoiceViewModel.update(invoice)
+        } else {
+            selectedItems.add(invoice)
+            invoice.isSelect = true
+            invoiceViewModel.update(invoice)
+        }
+        if (selectedItems.isEmpty()) {
+            actionMode?.finish()
+        } else {
+            selectedItems.forEach {
+                it.isSelect = false
+                invoiceViewModel.update(it)
+            }
+            actionMode?.invalidate()
+        }
+    }
+
+    private fun sendAllInvoice() {
+     val msg = postInvoicePictusre()
+        val mDialog =  MaterialDialog.Builder(requireActivity())
+        mDialog.setAnimation(R.raw.animation_refresh)
+            .setTitle(msg)
+            .setPositiveButton("Okey"){dialog,_->
+                dialog.dismiss()
+            }
+        mDialog.build().show()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun setUser(_user: User){
+        GlobalScope.launch {
+            val test = userViewModel.getUser(_user)
+            if (test != null){
+                Data.user = test
+                Log.d("Storage===>>>",test.email.toString())
+            }
+        }
+    }
+
+    @SuppressLint("SuspiciousIndentation")
+    private fun syncDirectory(){
+        CoroutineScope(Dispatchers.IO).launch {
+            val stringRequest = StringRequest(
+                Request.Method.GET, url_fusio(Route.url, Route.getAllDirectory_endpoint),
+                { response ->
+                    Log.e("Viva","######### -> $response")
+                    val responseObject: List<Directory> = Gson().fromJson(response,object : TypeToken<java.util.ArrayList<Directory>>() {}.type)
+                    responseObject.forEach {
+                        directoryViewModel.insert(it)
+                    }
+                    Toast.makeText(requireContext(),"Mises à jours détecté for directory",Toast.LENGTH_LONG).show()
+                    Log.e("Arrivederci","######### -> $responseObject")
+                },
+                { error ->
+                    Toast.makeText(requireContext(),"Connexion failed retry",Toast.LENGTH_LONG).show()
+                    Log.e("Viva","######### -> $error")
+                }
+            )
+            Singleton.getInstance(requireContext()).addToRequestQueue(stringRequest)
+        }
+
+    }
+    @SuppressLint("SuspiciousIndentation")
+    private fun syncInvoiceKey(){
+        CoroutineScope(Dispatchers.IO).launch {
+            val stringRequest = StringRequest(
+                Request.Method.GET, url_fusio(Route.url, Route.getAllInvoiceKey_endpoint),
+                { response ->
+                    Log.e("Viva","######### -> $response")
+                    // val obj =  Gson().fromJson(response.toString(), object : TypeToken<List<Directory>>() {}.type)
+                    val responseObject: List<InvoiceKey> = Gson().fromJson(response,object : TypeToken<java.util.ArrayList<InvoiceKey>>() {}.type)
+                    responseObject.forEach {
+                        invoiceKeyViewModel.insert(it)
+                    }
+                    Toast.makeText(requireContext(),"Mises à jours détecté for invoiceKey",Toast.LENGTH_LONG).show()
+                    Log.e("Arrivederci","######### -> $responseObject")
+                },
+                { error ->
+                    Toast.makeText(requireContext(),"Connexion failed retry",Toast.LENGTH_LONG).show()
+                    Log.e("Viva","######### -> $error")
+                }
+            )
+            Singleton.getInstance(requireContext()).addToRequestQueue(stringRequest)
+        }
+    }
+    private fun postInvoicePictusre():String{
+        var msg = "Nothing data to collection invoice"
+
+        if( adapterImageStore?.getSize()!= 0){
+            msg = "Data in collection invoice picture sum ${adapterImageStore?.getSize()} "
+        }
+        return msg
+    }
+
+//    override fun onSupportNavigateUp(): Boolean {
+//        val navController = findNavController(R.id.nav_host_fragment_content_main)
+//        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+//    }
 }
-
-

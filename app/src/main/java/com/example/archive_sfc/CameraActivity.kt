@@ -15,12 +15,16 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.Surface
 import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.BuildCompat
 import androidx.navigation.findNavController
 import com.example.archive_sfc.constante.ImageParcours
 import com.example.archive_sfc.databinding.ActivityCameraBinding
@@ -47,11 +51,30 @@ class CameraActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
     private lateinit var imageAnalysis : ImageAnalysis
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    @androidx.annotation.OptIn(androidx.core.os.BuildCompat.PrereleaseSdkCheck::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+        if(BuildCompat.isAtLeastT()){
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT){
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                finish()
+            }
+        }
+        else{
+            onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+                override fun handleOnBackPressed() {
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            })
+        }
+
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
                 Manifest.permission.CAMERA
@@ -266,4 +289,6 @@ companion object{
         }
         return registerForResult
     }
+
+
 }

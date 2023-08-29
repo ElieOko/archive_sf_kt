@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_nav_home_to_cameraFragment"
             app:destination="@id/cameraFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_galleryFragment"
+            app:destination="@id/galleryFragment" />
     </fragment>
     <fragment
         android:id="@+id/archiveEditFragment"
@@ -35,5 +38,10 @@
             android:id="@+id/action_cameraFragment_to_archiveEditFragment"
             app:destination="@id/archiveEditFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.example.archive_sfc.ui.gallery.GalleryFragment"
+        android:label="fragment_gallery"
+        tools:layout="@layout/fragment_gallery" />
 
 </navigation>

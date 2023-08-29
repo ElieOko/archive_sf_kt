@@ -1,9 +1,10 @@
 package com.example.archive_sfc.volley
 
 import android.content.Context
-import com.android.volley.Request
-import com.android.volley.RequestQueue
+import com.android.volley.*
+import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.Volley
+import java.io.*
 
 class Singleton constructor(context: Context) {
     companion object{
@@ -23,5 +24,73 @@ class Singleton constructor(context: Context) {
     fun <T> addToRequestQueue(req: Request<T>) {
         //
         requestQueue.add(req)
+    }
+}
+
+class MultipartRequest(
+    url: String,
+    private val file: File,
+    private val params: Map<String, String>,
+    private val listener: Response.Listener<NetworkResponse>,
+    errorListener: Response.ErrorListener
+) : Request<NetworkResponse>(Method.POST, url, errorListener) {
+
+    override fun getBodyContentType(): String {
+        return "multipart/form-data"
+    }
+
+    @Throws(AuthFailureError::class)
+    override fun getParams(): Map<String, String> {
+        return params
+    }
+
+    @Throws(AuthFailureError::class)
+    override fun getBody(): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val dataOutputStream = DataOutputStream(byteArrayOutputStream)
+
+        try {
+            // Ajouter les paramètres de la requête
+            params.forEach { (key, value) ->
+                dataOutputStream.writeBytes("--${MULTIPART_BOUNDARY}\r\n")
+                dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"$key\"\r\n")
+                dataOutputStream.writeBytes("\r\n")
+                dataOutputStream.writeBytes("$value\r\n")
+            }
+
+            // Ajouter le fichier
+            val fileInputStream = FileInputStream(file)
+            val fileBytes = ByteArray(fileInputStream.available())
+            fileInputStream.read(fileBytes)
+            fileInputStream.close()
+
+            dataOutputStream.writeBytes("--${MULTIPART_BOUNDARY}\r\n")
+            dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"${file.name}\"\r\n")
+            dataOutputStream.writeBytes("Content-Type: image/jpeg\r\n")
+            dataOutputStream.writeBytes("\r\n")
+            dataOutputStream.write(fileBytes)
+            dataOutputStream.writeBytes("\r\n")
+
+            // Terminer la requête
+            dataOutputStream.writeBytes("--$MULTIPART_BOUNDARY--\r\n")
+
+            return byteArrayOutputStream.toByteArray()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return super.getBody()
+    }
+
+    override fun parseNetworkResponse(response: NetworkResponse): Response<NetworkResponse> {
+        return Response.success(response, HttpHeaderParser.parseCacheHeaders(response))
+    }
+
+    override fun deliverResponse(response: NetworkResponse?) {
+
+    }
+
+    companion object {
+        private const val MULTIPART_BOUNDARY = "*****"
     }
 }

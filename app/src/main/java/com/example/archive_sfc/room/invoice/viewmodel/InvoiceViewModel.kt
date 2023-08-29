@@ -2,7 +2,6 @@ package com.example.archive_sfc.room.invoice.viewmodel
 
 import androidx.lifecycle.*
 import com.example.archive_sfc.models.room.Invoice
-import com.example.archive_sfc.models.room.Picture
 import com.example.archive_sfc.room.invoice.repository.InvoiceRepository
 import kotlinx.coroutines.launch
 
@@ -12,7 +11,11 @@ class InvoiceViewModel (private val repository: InvoiceRepository) : ViewModel()
     
     val allInvoice = repository.allInvoice.asLiveData()
     var allInvoices : MutableLiveData<List<Invoice>> = MutableLiveData<List<Invoice>>()
+    fun update(invoice: Invoice) = viewModelScope.launch {
+        repository.update(invoice)
+    }
 
+    fun getById(invoice: Invoice) = repository.getById(invoice.InvoiceId)
     fun insert(invoice: Invoice) = viewModelScope.launch {
         repository.insert(invoice)
     }

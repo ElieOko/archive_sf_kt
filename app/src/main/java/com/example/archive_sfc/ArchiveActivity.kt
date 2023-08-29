@@ -42,6 +42,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 @ExperimentalGetImage
 class ArchiveActivity : AppCompatActivity() {
@@ -119,6 +120,10 @@ class ArchiveActivity : AppCompatActivity() {
     private fun launch(){
         mBinding.takePicture.setOnClickListener{
             val intent = Intent(this@ArchiveActivity, CameraActivity::class.java)
+            val cr : ArrayList<Picture> = ArrayList()
+            intent.putExtra("coding",cr)
+            //  cleMax = intent.getIntExtra( "MAX",0)
+            //intent.hasExtra("MAX" )
             intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
@@ -314,10 +319,9 @@ class ArchiveActivity : AppCompatActivity() {
 
                     ImageParcours.stdList.clear()
                     val intent = Intent(this@ArchiveActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
                     finish()
-                    Log.e("Taille ouo => ","${it.size}")
                 }
              }
         }

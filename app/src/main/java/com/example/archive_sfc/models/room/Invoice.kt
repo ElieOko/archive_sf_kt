@@ -23,6 +23,7 @@ data class Invoice(
     @ColumnInfo(name = "clientName", defaultValue = "null") val clientName: String? = "" ,
     @ColumnInfo(name = "clientPhone", defaultValue = "null") val clientPhone: String? = "" ,
     @ColumnInfo(name = "expiredDate", defaultValue = "null") val expiredDate: String? = "" ,
+    @ColumnInfo(name = "isSelect",defaultValue = "false") var isSelect: Boolean = false
 )
 /*
             $table->id("InvoiceId");

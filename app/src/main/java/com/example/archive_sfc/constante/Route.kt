@@ -1,7 +1,7 @@
 package com.example.archive_sfc.constante
 
 object Route {
-   const val url               = "https://f0c1-169-159-212-84.ngrok-free.app/api/"
+   const val url               = "https://4729-41-174-140-34.ngrok-free.app/api/"
    const val userauth_endpoint = "login"
    const val getAllDirectory_endpoint ="alldirectory"
    const val getAllInvoice_endpoint ="invoice"

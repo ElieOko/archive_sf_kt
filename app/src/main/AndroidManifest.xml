@@ -21,6 +21,9 @@
         android:theme="@style/Theme.Archive_sfc"
         tools:targetApi="31">
         <activity
+            android:name=".GalerieContentActivity"
+            android:exported="false" />
+        <activity
             android:name=".ArchiveActivity"
             android:exported="false" />
         <activity

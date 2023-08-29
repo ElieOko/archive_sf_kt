@@ -3,41 +3,38 @@ package com.example.archive_sfc.adaptater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.archive_sfc.R
-import com.example.archive_sfc.models.Profil
+import com.example.archive_sfc.models.room.Picture
 
-class AdaptaterMain : RecyclerView.Adapter<AdaptaterMain.ViewHolder>() {
+class AdaptaterMainGalerie : RecyclerView.Adapter<AdaptaterMainGalerie.ViewHolder>() {
 
-    private var stdList :ArrayList<Profil> = ArrayList()
+    private var stdList :List<Picture> = ArrayList()
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private var nom = view.findViewById<TextView>(R.id.name)
-        private var status = view.findViewById<TextView>(R.id.status)
-        fun bindView(item: Profil) {
-          nom.text = item.nameUser
-          status.text = item.status
+        private var image = view.findViewById<ImageView>(R.id.imageSlide)
+        fun bindView(item: Picture) {
+            image.setImageBitmap(item.contentFile)
         }
     }
-    fun addItem(items: ArrayList<Profil>){
+    fun addItem(items: List<Picture>){
         this.stdList = items
         notifyDataSetChanged()
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.nav_header_main, parent,
+                R.layout.slide, parent,
                 false
             )
         )
     }
-
     override fun getItemCount(): Int {
-      return 1
+      return stdList.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = stdList[0]
+        val item = stdList[position]
         holder.bindView(item)
     }
 }

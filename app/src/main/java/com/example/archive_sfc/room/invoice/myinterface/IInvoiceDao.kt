@@ -1,10 +1,8 @@
 package com.example.archive_sfc.room.invoice.myinterface
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.archive_sfc.models.room.Invoice
+import com.example.archive_sfc.models.room.User
 
 import kotlinx.coroutines.flow.Flow
 
@@ -13,7 +11,10 @@ import kotlinx.coroutines.flow.Flow
 interface IInvoiceDao {
     @Query("SELECT * FROM invoice")
     fun getAll(): Flow<List<Invoice>>
-
+    @Query("SELECT * FROM invoice WHERE InvoiceId like :InvoiceId")
+    fun getById(InvoiceId:Int): Invoice?
+    @Update
+    suspend fun update(invoice: Invoice)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(invoice: Invoice)
 }

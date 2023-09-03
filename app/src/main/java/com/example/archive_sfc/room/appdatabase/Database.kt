@@ -11,9 +11,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.archive_sfc.models.room.*
 import com.example.archive_sfc.room.Converters
 import com.example.archive_sfc.room.branch.myinterface.IBranchDao
+import com.example.archive_sfc.room.branch.myinterface.IUrlDao
 import com.example.archive_sfc.room.invoice.myinterface.IInvoiceDao
 import com.example.archive_sfc.room.invoicekey.myinterface.IInvoiceKeyDao
 import com.example.archive_sfc.room.picture.myinterface.IPictureDao
+import com.example.archive_sfc.room.status.myinterface.IStatusDao
 import com.example.archive_sfc.room.user.myinterface.IUserDao
 import com.example.archive_sfc.room.userdirectory.myinterface.IUserDirectoyDao
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +23,7 @@ import kotlinx.coroutines.launch
 
 
 @TypeConverters(Converters::class)
-@Database(entities = [User::class, Branch::class, Directory::class, UserDirectory::class, InvoiceKey::class,Invoice::class,Picture::class], version = 22, exportSchema = false)
+@Database(entities = [User::class, Branch::class, Directory::class, UserDirectory::class, InvoiceKey::class,Invoice::class,Picture::class,Url::class,Status::class], version = 25, exportSchema = false)
 public abstract class UserRoomDatabase : RoomDatabase() {
 
     abstract fun userDao(): IUserDao
@@ -31,7 +33,8 @@ public abstract class UserRoomDatabase : RoomDatabase() {
     abstract fun invoiceKeyDao(): IInvoiceKeyDao
     abstract fun invoiceDao(): IInvoiceDao
     abstract fun pictureDao(): IPictureDao
-
+    abstract fun urlDao(): IUrlDao
+    abstract fun statusDao():IStatusDao
 
     companion object {
         // Singleton prevents multiple instances of database opening at the

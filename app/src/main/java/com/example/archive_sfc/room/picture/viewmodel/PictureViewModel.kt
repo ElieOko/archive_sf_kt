@@ -16,6 +16,16 @@ class PictureViewModel (private val repository: PictureRepository) : ViewModel()
     fun insert(picture: Picture) = viewModelScope.launch {
         repository.insert(picture)
     }
+
+    fun deleteGetById(PictureId:Int)= viewModelScope.launch {
+        repository.deleteGetById(PictureId)
+    }
+    fun deleteAllFID(InvoiceFId:Int) = viewModelScope.launch {
+        repository.deleteAllFID(InvoiceFId)
+    }
+    fun deleteAll() = viewModelScope.launch {
+        repository.deleteAll()
+    }
     fun getAllImageByInvoice(invoiceFId:Int):MutableLiveData<List<Picture>>{
         viewModelScope.launch {
             repository.getAllById(invoiceFId).collect{

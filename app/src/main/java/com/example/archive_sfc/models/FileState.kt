@@ -10,3 +10,10 @@ data class FileState(
     val uri: Uri?,
     val fileContent: File?
 )
+
+
+class DataPart (
+    var fileName: String,
+    var content: ByteArray,
+    var type: String
+)

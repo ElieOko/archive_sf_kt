@@ -15,6 +15,21 @@ class PictureRepository (private val pictureDao: IPictureDao)  {
     }
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
+    suspend fun deleteAllFID(InvoiceFId:Int){
+        pictureDao.deleteAllFID(InvoiceFId )
+    }
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun deleteAll() {
+        pictureDao.deleteAll()
+    }
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun deleteGetById(PictureId:Int){
+        pictureDao.deleteGetById(PictureId)
+    }
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
     suspend fun insert(picture: Picture) {
         pictureDao.insert(picture)
     }

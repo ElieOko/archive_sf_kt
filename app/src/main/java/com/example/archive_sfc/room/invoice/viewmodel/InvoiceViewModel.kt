@@ -8,8 +8,8 @@ import kotlinx.coroutines.launch
 class InvoiceViewModel (private val repository: InvoiceRepository) : ViewModel()  {
 
     val xs: LiveData<List<Invoice>> = repository.allInvoice.asLiveData()
-    
-    val allInvoice = repository.allInvoice.asLiveData()
+    //val allStatus: LiveData<List<Status>> = repository.allStatus.asLiveData()
+    val allInvoice:LiveData<List<Invoice>>  = repository.allInvoice.asLiveData()
     var allInvoices : MutableLiveData<List<Invoice>> = MutableLiveData<List<Invoice>>()
     fun update(invoice: Invoice) = viewModelScope.launch {
         repository.update(invoice)
@@ -18,6 +18,9 @@ class InvoiceViewModel (private val repository: InvoiceRepository) : ViewModel()
     fun getById(invoice: Invoice) = repository.getById(invoice.InvoiceId)
     fun insert(invoice: Invoice) = viewModelScope.launch {
         repository.insert(invoice)
+    }
+    fun deleteAll() = viewModelScope.launch {
+        repository.deleteAll()
     }
     fun deleteById(InvoiceId:Int) = viewModelScope.launch {
         repository.deleteById(InvoiceId)

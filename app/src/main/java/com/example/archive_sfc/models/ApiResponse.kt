@@ -26,5 +26,12 @@ data class ApiInvoiceKey(
 )
 data class ApiUser(
     val user: User,
-    val token:String
+    val token:String,
+    var message: String =""
+)
+
+
+data class ApiInvoice(
+    val message: String,
+    val invoiceId:Int
 )

@@ -21,7 +21,10 @@ interface IPictureDao{
     @Query("DELETE FROM picture")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM picture WHERE PictureId LIKE :PictureId")
+    suspend fun deleteGetById(PictureId:Int)
+
     @Query("DELETE FROM picture WHERE InvoiceFId LIKE :InvoiceFId")
-    suspend fun deleteGetById(InvoiceFId:Int)
+    suspend fun deleteAllFID(InvoiceFId:Int)
 }
 

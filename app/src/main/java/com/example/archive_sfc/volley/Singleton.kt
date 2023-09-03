@@ -36,7 +36,8 @@ class MultipartRequest(
 ) : Request<NetworkResponse>(Method.POST, url, errorListener) {
 
     override fun getBodyContentType(): String {
-        return "multipart/form-data"
+        var boundary = "apiclient-" + System.currentTimeMillis()
+        return "multipart/form-data;boundary=$boundary"
     }
 
     @Throws(AuthFailureError::class)
@@ -52,7 +53,7 @@ class MultipartRequest(
         try {
             // Ajouter les paramètres de la requête
             params.forEach { (key, value) ->
-                dataOutputStream.writeBytes("--${MULTIPART_BOUNDARY}\r\n")
+                dataOutputStream.writeBytes("--apiclient${System.currentTimeMillis()}\r\n")
                 dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"$key\"\r\n")
                 dataOutputStream.writeBytes("\r\n")
                 dataOutputStream.writeBytes("$value\r\n")
@@ -60,11 +61,11 @@ class MultipartRequest(
 
             // Ajouter le fichier
             val fileInputStream = FileInputStream(file)
-            val fileBytes = ByteArray(fileInputStream.available())
+            val fileBytes: ByteArray = ByteArray(fileInputStream.available())
             fileInputStream.read(fileBytes)
             fileInputStream.close()
 
-            dataOutputStream.writeBytes("--${MULTIPART_BOUNDARY}\r\n")
+            dataOutputStream.writeBytes("--${System.currentTimeMillis()}\r\n")
             dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"${file.name}\"\r\n")
             dataOutputStream.writeBytes("Content-Type: image/jpeg\r\n")
             dataOutputStream.writeBytes("\r\n")
@@ -72,7 +73,7 @@ class MultipartRequest(
             dataOutputStream.writeBytes("\r\n")
 
             // Terminer la requête
-            dataOutputStream.writeBytes("--$MULTIPART_BOUNDARY--\r\n")
+            dataOutputStream.writeBytes("--${System.currentTimeMillis()}--\r\n")
 
             return byteArrayOutputStream.toByteArray()
         } catch (e: IOException) {
@@ -89,8 +90,9 @@ class MultipartRequest(
     override fun deliverResponse(response: NetworkResponse?) {
 
     }
-
     companion object {
         private const val MULTIPART_BOUNDARY = "*****"
     }
 }
+
+

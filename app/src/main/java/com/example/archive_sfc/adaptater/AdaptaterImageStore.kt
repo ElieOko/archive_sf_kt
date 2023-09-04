@@ -30,6 +30,13 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
         this.stdListImage.clear()
         //notifyDataSetChanged()
     }
+    fun delete(invoice: Invoice){
+        val position = this.sdtListInvoice.indexOf(invoice)
+        sdtListInvoice.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, sdtListInvoice.size)
+        notifyDataSetChanged()
+    }
     fun onLongClickItem(callback:(Invoice) -> Unit){
         this.onLongClickItem = callback
     }

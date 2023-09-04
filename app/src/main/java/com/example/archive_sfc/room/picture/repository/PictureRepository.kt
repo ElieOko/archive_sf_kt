@@ -33,4 +33,11 @@ class PictureRepository (private val pictureDao: IPictureDao)  {
     suspend fun insert(picture: Picture) {
         pictureDao.insert(picture)
     }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun delete(picture: Picture) {
+        pictureDao.delete(picture)
+    }
+
 }

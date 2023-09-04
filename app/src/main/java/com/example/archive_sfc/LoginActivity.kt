@@ -52,11 +52,8 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dev.shreyaspatil.MaterialDialog.MaterialDialog
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
@@ -64,8 +61,6 @@ import org.json.JSONObject
 open class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var mDialog: MaterialDialog.Builder
-//    private val dataStore by dataStore(fileName = "user_preferences", serializer = User)
-
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory((application as UserApplication).repository)
     }
@@ -82,10 +77,9 @@ open class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         //prefsData = ViewModelProvider(this).get(PrefsDataStoreScreenViewModel::class.java)
-        val url = Url(1,"https://6105-41-174-140-34.ngrok-free.app")
+        val url = Url(1,"https://86e9-41-77-220-94.ngrok-free.app")
         urlViewModel.insert(url)
         urlViewModel.allUrl.observe(this){
-            Toast.makeText(this,"${it[0]?.server}",Toast.LENGTH_LONG).show()
             server = it[0]?.server!!
         }
         statusViewModel.deleteAll()
@@ -99,8 +93,21 @@ open class LoginActivity : AppCompatActivity() {
     }
     private fun setting(){
         binding.toolbar.icMenu.setOnClickListener {
-           Toast.makeText(this,"Settings $server",Toast.LENGTH_LONG).show()
-            dialogSetting(message = server as String )
+            val view = LayoutInflater.from(this).inflate(R.layout.input_dialog,null)
+            val editTextUrl = view.findViewById<TextInputEditText>(R.id.server)
+            editTextUrl.setText("$server")
+            val dialog = MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setPositiveButton("Save") { dialog, _ ->
+                    val url = Url(1,"${editTextUrl.text.toString()}")
+                    urlViewModel.update(url)
+                    dialog.dismiss()
+                }
+                .setNeutralButton("Cancel"){ dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+            dialog.show()
             true
         }
     }
@@ -132,7 +139,10 @@ open class LoginActivity : AppCompatActivity() {
                         binding.password.isEnabled = false
                         binding.buttonLogin.isEnabled = false
                         when (mode) {
-                            items[0] -> offline(user,it)
+                            items[0] -> {
+                                binding.progressIndicator.isIndeterminate = true
+                                offline(user,it)
+                            }
                             items[1] -> online(user,it)
                             items[2] -> auto(user,it,true)
                             else ->   dialog("Warning","Mode is null")
@@ -160,66 +170,63 @@ open class LoginActivity : AppCompatActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     private fun offline(_user: User, view:View,status: Boolean = false): Any? {
         var check : Any? = null
-        var status = true
         binding.username.isEnabled = false
         binding.password.isEnabled = false
         binding.buttonLogin.isEnabled = false
-        GlobalScope.launch {
-            val test = userViewModel.auth(_user)
-            if(!status){
-                if (test != null) {
-                    Log.d("msg",test.username)
-                    check = test
-                    UserData.name = test.username
-                    idUser = test.UserId
-                    //statusViewModel.
-                    val status = Status(1,idUser)
-                    statusViewModel.insert(status)
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
-                    finish()
-                    Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
+                GlobalScope.launch(Dispatchers.Main){
+                    val test = userViewModel.auth(_user)
+                    if(!status){
+                        if (test != null) {
+                            binding.progressIndicator.isIndeterminate = false
+                            Log.d("msg",test.username)
+                            check = test
+                            UserData.name = test.username
+                            idUser = test.UserId
+                            val status = Status(1,idUser)
+                            statusViewModel.insert(status)
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            startActivity(intent)
+                            finish()
+                            Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show()
+                        }
+                    }
+                    else{
+                        if (test != null) {
+                            Log.d("msg",test.username)
+                            check = test
+                            UserData.name = test.username
+                            idUser = test.UserId
+                            //statusViewModel.
+                            val status = Status(1,idUser)
+                            statusViewModel.insert(status)
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            startActivity(intent)
+                            finish()
+                            Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show()
+                        }
+                        else{
+                            binding.progressIndicator.isIndeterminate = false
+                            dialog("Error","User not found in Storage with information provide")
+                        }
+                    }
                 }
-                else{
-                    Snackbar.make(view,"User not found in Storage", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                }
-            }
-            else{
-                if (test != null) {
-                    Log.d("msg",test.username)
-                    check = test
-                    UserData.name = test.username
-                    idUser = test.UserId
-                    //statusViewModel.
-                    val status = Status(1,idUser)
-                    statusViewModel.insert(status)
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
-                    finish()
-                    Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                }
-            }
-        }
-        //mDialogConnexion("AuthError","User not found")
-        binding.username.isEnabled = true
-        binding.password.isEnabled = true
-        binding.buttonLogin.isEnabled = true
+                binding.username.isEnabled = true
+                binding.password.isEnabled = true
+                binding.buttonLogin.isEnabled = true
         return check
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun online(user: User, view:View,status: Boolean = false) {
-        mDialog =  MaterialDialog.Builder(this)
         binding.username.isEnabled = false
         binding.password.isEnabled = false
         binding.buttonLogin.isEnabled = false
         binding.buttonLogin.text = "Loading..."
-
+        binding.progressIndicator.isIndeterminate = true
+        var test = 0
         if(!checkingConnexion()) run {
             mDialogConnexion("Connexion failed","Connection error, make sure you are connected to the internet",R.raw.animation_failed_connexion)
             binding.username.isEnabled = true
@@ -231,12 +238,9 @@ open class LoginActivity : AppCompatActivity() {
             val data  = JSONObject()
             data.put("username",user.username)
             data.put("password",user.password)
-            mDialog.setAnimation(R.raw.animation_load)
-            mDialog.setMessage("Chargement")
-            mDialog.setCancelable(false)
             GlobalScope.launch(Dispatchers.Main) {
                 val jsonObjectRequest = JsonObjectRequest(
-                    Request.Method.POST, url_fusio(Route.url,Route.userauth_endpoint), data,
+                    Request.Method.POST, url_fusio("$server/api/",Route.userauth_endpoint), data,
                     { response ->
                         Log.e("Viva","Retour -> $response")
                         Snackbar.make(view, "Connecter $response", Snackbar.LENGTH_LONG)
@@ -245,29 +249,31 @@ open class LoginActivity : AppCompatActivity() {
                         UserData.password = user.password
                         val responseObject: ApiUser = Gson().fromJson(response.toString(),object : TypeToken<ApiUser>() {}.type)
                         Log.e("Login","Oups->> $responseObject")
+                        binding.progressIndicator.isIndeterminate = false
                         if(responseObject?.message == "User Unauthorized"){
                             Snackbar.make(view, "User Unauthorized", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show()
+                            binding.username.isEnabled = true
+                            binding.password.isEnabled = true
+                            binding.buttonLogin.isEnabled = true
+                            binding.buttonLogin.text = "Connexion"
                         }
                         else{
                             val user = User(responseObject.user.UserId,responseObject.user.username,user.password,role=responseObject.user.role, smstoken = responseObject.token, BranchFId = responseObject.user.BranchFId )
                             idUser = responseObject.user.UserId
-                            //prefsData.saveValue(responseObject.token,responseObject.user.UserId.toString())
                             userViewModel.insert(user)
                             val status = Status(1,responseObject.user.UserId)
                             statusViewModel.insert(status)
                             UserData.keys = responseObject.user.UserId.toString()
                             token = responseObject.token
-                            mDialog.build().dismiss()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                             startActivity(intent)
                             finish()
                         }
-
                     },
                     { error ->
-                        mDialog.build().dismiss()
+                        binding.progressIndicator.isIndeterminate = false
                        if(error.toString() == "com.android.volley.ClientError"){
                            mDialogConnexion("Error","We couldn't find the server",R.raw.animation_srv)
                        }
@@ -275,7 +281,6 @@ open class LoginActivity : AppCompatActivity() {
                         binding.password.isEnabled = true
                         binding.buttonLogin.isEnabled = true
                         binding.buttonLogin.text = "Connexion"
-
                     }
                 )
                 Singleton.getInstance(applicationContext).addToRequestQueue(jsonObjectRequest)
@@ -299,7 +304,6 @@ open class LoginActivity : AppCompatActivity() {
             Toast.LENGTH_LONG
         ).show()
     }
-
     private fun checkingConnexion():Boolean {
         val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as (ConnectivityManager)
         val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)

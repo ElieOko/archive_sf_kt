@@ -33,4 +33,9 @@ class InvoiceRepository (private val invoiceDao: IInvoiceDao)  {
     suspend fun insert(invoice: Invoice) {
         invoiceDao.insert(invoice)
     }
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun delete(invoice: Invoice) {
+        invoiceDao.delete(invoice)
+    }
 }

@@ -15,7 +15,7 @@ interface IUserDao {
 
     @Query("SELECT * FROM user WHERE username LIKE :username AND " +
             "password LIKE :password LIMIT 1")
-    fun auth(username: String, password: String): User?
+    suspend fun auth(username: String, password: String): User?
 //    @Delete
 //    fun delete(user: com.example.archive_sfc.models.room.User)
     @Insert(onConflict = OnConflictStrategy.IGNORE)

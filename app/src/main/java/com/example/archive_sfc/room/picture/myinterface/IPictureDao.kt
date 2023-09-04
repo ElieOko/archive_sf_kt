@@ -1,13 +1,8 @@
 package com.example.archive_sfc.room.picture.myinterface
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.archive_sfc.models.room.Picture
 import kotlinx.coroutines.flow.Flow
-
-
 @Dao
 interface IPictureDao{
 
@@ -23,7 +18,8 @@ interface IPictureDao{
 
     @Query("DELETE FROM picture WHERE PictureId LIKE :PictureId")
     suspend fun deleteGetById(PictureId:Int)
-
+    @Delete
+    suspend fun delete(picture:Picture)
     @Query("DELETE FROM picture WHERE InvoiceFId LIKE :InvoiceFId")
     suspend fun deleteAllFID(InvoiceFId:Int)
 }

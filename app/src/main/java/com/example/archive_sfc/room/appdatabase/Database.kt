@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.archive_sfc.models.room.*
 import com.example.archive_sfc.room.Converters
 import com.example.archive_sfc.room.branch.myinterface.IBranchDao
-import com.example.archive_sfc.room.branch.myinterface.IUrlDao
+import com.example.archive_sfc.room.url.myinterface.IUrlDao
 import com.example.archive_sfc.room.invoice.myinterface.IInvoiceDao
 import com.example.archive_sfc.room.invoicekey.myinterface.IInvoiceKeyDao
 import com.example.archive_sfc.room.picture.myinterface.IPictureDao

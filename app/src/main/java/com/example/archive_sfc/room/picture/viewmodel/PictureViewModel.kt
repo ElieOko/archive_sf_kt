@@ -16,6 +16,9 @@ class PictureViewModel (private val repository: PictureRepository) : ViewModel()
     fun insert(picture: Picture) = viewModelScope.launch {
         repository.insert(picture)
     }
+    fun delete(picture: Picture) = viewModelScope.launch {
+        repository.delete(picture)
+    }
 
     fun deleteGetById(PictureId:Int)= viewModelScope.launch {
         repository.deleteGetById(PictureId)

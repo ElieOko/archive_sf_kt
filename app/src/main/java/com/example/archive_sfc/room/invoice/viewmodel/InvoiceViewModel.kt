@@ -19,6 +19,9 @@ class InvoiceViewModel (private val repository: InvoiceRepository) : ViewModel()
     fun insert(invoice: Invoice) = viewModelScope.launch {
         repository.insert(invoice)
     }
+    fun detete(invoice: Invoice) = viewModelScope.launch {
+        repository.delete(invoice)
+    }
     fun deleteAll() = viewModelScope.launch {
         repository.deleteAll()
     }

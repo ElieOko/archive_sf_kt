@@ -119,7 +119,6 @@ class ArchiveActivity : AppCompatActivity() {
         invoiceViewModel.allInvoice.observe(this){
             Log.e("TAG invoice => ","${it.size}")
         }
-        Toast.makeText(this,"ID USER -> ${Data.user}",Toast.LENGTH_LONG).show()
         optionSelect()
         verifySubFolder()
         verifyInvoiceKey()
@@ -304,24 +303,11 @@ class ArchiveActivity : AppCompatActivity() {
                             )
                             invoiceViewModel.insert(invoice)
                             savePicture(invoiceUniqueId)
-//                        if(status){
-//                            mDialogConnexion("Save invoice","Invoice to save",R.raw.animation_success)
-//                        }
-//                        else{
-//                            dialog("Warning","Some fields cannot be empty try again entering values in the input boxes *")
-//                        }
                         }
                     }
                     else{
                         dialog("Error","Keys invalidate *")
                     }
-
-//                    else{
-//                        Toast.makeText(this,"Foreach save invoice, add picture",Toast.LENGTH_LONG).show()
-//                        val intent = Intent(this@ArchiveActivity, MainActivity::class.java)
-//                        startActivity(intent)
-//                        finish()
-//                    }
                 }
                 else{
                     dialog("Warning","Some fields cannot be empty try again entering values in the input boxes *")
@@ -354,7 +340,6 @@ class ArchiveActivity : AppCompatActivity() {
                     }
                     ImageParcours.stdList.clear()
                     invoiceViewModel.allInvoice.observe(this) { its->
-                        Toast.makeText(this,"Enter",Toast.LENGTH_LONG).show()
                         var iteration = 0
                         its.forEach {invoice ->
                             var listInvoicePicture = mutableListOf<Picture>()
@@ -363,42 +348,12 @@ class ArchiveActivity : AppCompatActivity() {
                                 listPicture.filterTo(listInvoicePicture){io->
                                     io.InvoiceFId == invoice.InvoiceId
                                 }
-                                Log.e("ADAPTATER* ->${iteration}","->[${listInvoicePicture.size}]=${listInvoicePicture}")
-                                Log.e("INVOICE* ->${iteration}","->[--${invoice}]--")
-//                        adapterImageStore?.addImageInContenaire(invoice,
-//                            listInvoicePicture as ArrayList<Picture>
-//                        )
                             }
 
-//                        Log.d("Iteration $iteration -->", "$it")
-//                        if (!listInvoicePicture.contains(listPicture)) {
-//                            Log.e("ICI =>", "$listInvoicePicture")
-//                            listInvoicePicture.addAll(arrayListOf(listPicture))
-//                            // sdt.add(stockInvoicePicture)
-//                        }
-
-                            //adapterImageStore?.addImageInContenaire(stockInvoicePicture)
                         }
 
                     }
-//                    invoiceViewModel.allInvoice.observe(this) {p->
-//                        var iteration = 0
-//                        p.forEach { i ->
-//                            pictureViewModel.getAllImageByInvoice(i.InvoiceId).observe(this) { listPicture ->
-//                                if (!listInvoicePicture.contains(listPicture)) {
-//                                    Log.e("ICI =>", "$listInvoicePicture")
-//                                    listInvoicePicture.addAll(arrayListOf(listPicture))
-//                                    // sdt.add(stockInvoicePicture)
-//                                }
-//                                iteration++
-//                                if (it.size == iteration) {
-//                                    Log.e("What -> ","$listInvoicePicture")
-////                                    adapterImageStore?.addImageInContenaire(it as MutableList<Invoice>, listInvoicePicture)
-//                                    //adapterImageStore?.addImageInContenaire(stockInvoicePicture)
-//                                }
-//                            }
-//                        }
-//                    }
+
                     val intent = Intent(this@ArchiveActivity, MainActivity::class.java)
                     startActivity(intent)
                     finish()

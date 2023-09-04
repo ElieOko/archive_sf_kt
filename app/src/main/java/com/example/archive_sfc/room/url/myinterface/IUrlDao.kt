@@ -1,9 +1,6 @@
-package com.example.archive_sfc.room.branch.myinterface
+package com.example.archive_sfc.room.url.myinterface
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.archive_sfc.models.room.Url
 
 import kotlinx.coroutines.flow.Flow
@@ -15,4 +12,6 @@ interface IUrlDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(url: Url)
+    @Update
+    suspend fun update(url: Url)
 }

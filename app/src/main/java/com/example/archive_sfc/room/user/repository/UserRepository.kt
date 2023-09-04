@@ -18,7 +18,9 @@ class UserRepository(private val userDao: IUserDao) {
     // implement anything else to ensure we're not doing long running database work
     // off the main thread.
 
-    fun auth(user: User) : User?{
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun auth(user: User) : User?{
        return userDao.auth(user.username,user.password)
     }
 

@@ -47,6 +47,8 @@ import com.example.archive_sfc.room.picture.viewmodel.PictureViewModel
 import com.example.archive_sfc.room.picture.viewmodel.PictureViewModelFactory
 import com.example.archive_sfc.room.status.viewModel.StatusViewModel
 import com.example.archive_sfc.room.status.viewModel.StatusViewModelFactory
+import com.example.archive_sfc.room.url.viewModel.UrlViewModel
+import com.example.archive_sfc.room.url.viewModel.UrlViewModelFactory
 import com.example.archive_sfc.room.user.viewmodel.UserViewModel
 import com.example.archive_sfc.room.user.viewmodel.UserViewModelFactory
 import com.example.archive_sfc.utils.url_fusio
@@ -73,7 +75,6 @@ class HomeFragment : Fragment() {
     private var actionMode: ActionMode? = null
     private val selectedItems = mutableListOf<Invoice>()
     private lateinit var mDialog: MaterialDialog.Builder
-   // private val Context.dataStore by preferencesDataStore("settings")
     private var userParcour = mutableListOf<User>()
     private val tag = "HomeFragment"
     private val pictureViewModel: PictureViewModel by viewModels {
@@ -98,7 +99,10 @@ class HomeFragment : Fragment() {
     private val statusViewModel: StatusViewModel by viewModels {
         StatusViewModelFactory((activity?.application as UserApplication).repositoryStatus)
     }
-
+    private val urlViewModel: UrlViewModel by viewModels {
+        UrlViewModelFactory((activity?.application as UserApplication).repositoryUrl)
+    }
+    private var server :Any = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -109,7 +113,6 @@ class HomeFragment : Fragment() {
         Log.e(tag,"onCreateView")
         return binding!!.root
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         // The usage of an interface lets you inject your own implementation
         Log.e(tag,"onViewCreated")
@@ -143,7 +146,6 @@ class HomeFragment : Fragment() {
             }
         }
         initRecy()
-        //prefsData = ViewModelProvider(this).get(PrefsDataStoreScreenViewModel::class.java)
         manageEvent()
         binding?.toolbar?.inflateMenu(R.menu.main)
         binding?.toolbar?.setOnMenuItemClickListener {
@@ -170,6 +172,10 @@ class HomeFragment : Fragment() {
         recyclerView?.layoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView?.adapter = adapterImageStore
         allPicture()
+        urlViewModel.allUrl.observe(viewLifecycleOwner){
+            Toast.makeText(requireContext(),"${it[0]?.server}",Toast.LENGTH_LONG).show()
+            server = it[0]?.server!!
+        }
         userViewModel.user.observe(viewLifecycleOwner) {
             if (it != null) {
                 Log.d("com", it.toString())
@@ -188,19 +194,15 @@ class HomeFragment : Fragment() {
                         user.UserId == userOn
                     }
                 }
-                Toast.makeText(context,"Notre utilisateur $userOn",Toast.LENGTH_LONG).show()
             }
         }
     }
-
     private inner class SelectionCallback : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            // Inflating the menu resource
             val inflater = mode.menuInflater
             inflater.inflate(R.menu.action_mode, menu)
             return true
         }
-
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             mode.title = "${selectedItems.size} tailles"
             return true
@@ -209,22 +211,13 @@ class HomeFragment : Fragment() {
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             when (item.itemId) {
                 R.id.delete -> {
-                    // Perform action on selected items (e.g., delete)
-                    // deleteSelectedItems()
-                    GlobalScope.launch(Dispatchers.Main) {
                         var i = 0
                         selectedItems.forEach {
                             i++
-                            Toast.makeText(context,"delete ${it.InvoiceId}",Toast.LENGTH_LONG).show()
-                            pictureViewModel.deleteAllFID(it.InvoiceId)
-                            invoiceViewModel.deleteById(it.InvoiceId)
-//                            if(selectedItems.size - 1 == i){
-//                                initRecy()
-//                            }
+                                adapterImageStore?.delete(it)
+                                invoiceViewModel.detete(it)
                         }
-                        initRecy()
-                    }
-                    mode.finish() // Finish the action mode
+                    mode.finish()
                     return true
                 }
             }
@@ -246,26 +239,14 @@ class HomeFragment : Fragment() {
             setUser(user)
             invoiceViewModel.allInvoice.observe(viewLifecycleOwner) {
                 var iteration = 0
-                Toast.makeText(context,"Hello world",Toast.LENGTH_LONG).show()
                 it.forEach {invoice ->
-                    Toast.makeText(context,"$invoice",Toast.LENGTH_LONG).show()
-                    iteration++
-                    pictureViewModel.getAllImageByInvoice(invoice.InvoiceId).observe(viewLifecycleOwner){listInvoicePicture ->
-                        Log.e("ADAPTATER","->[${listInvoicePicture.size}]=${listInvoicePicture}")
-                        Log.e("INVOICE","->[--${invoice}]--")
-                        adapterImageStore?.addImageInContenaire(invoice,
-                            listInvoicePicture as ArrayList<Picture>,it
-                        )
+                        iteration++
+                        pictureViewModel.getAllImageByInvoice(invoice.InvoiceId).observe(viewLifecycleOwner){listInvoicePicture ->
+                            adapterImageStore?.addImageInContenaire(invoice,
+                                listInvoicePicture as ArrayList<Picture>,it
+                            )
+                        }
                     }
-//                        Log.d("Iteration $iteration -->", "$it")
-//                        if (!listInvoicePicture.contains(listPicture)) {
-//                            Log.e("ICI =>", "$listInvoicePicture")
-//                            listInvoicePicture.addAll(arrayListOf(listPicture))
-//                            // sdt.add(stockInvoicePicture)
-//                        }
-                            //adapterImageStore?.addImageInContenaire(stockInvoicePicture)
-                    }
-
             }
         }
         catch(e:Exception){
@@ -300,10 +281,6 @@ class HomeFragment : Fragment() {
                      syncDirectory()
                      syncInvoiceKey()
                         mDialogConnexion("Storage update","Mises à jour éffectué avec succès",R.raw.animation_success)
-//                    }
-//                    else{
-//                        mDialogConnexion("Retry update","Mises à jour non éffectué",R.raw.animation_refresh)
-//                    }
                 }
             }
         }
@@ -364,7 +341,7 @@ class HomeFragment : Fragment() {
                         CoroutineScope(Dispatchers.IO).launch {
                             val jsonObjectRequest = JsonObjectRequest(
                                 Request.Method.POST,
-                                url_fusio(Route.url, Route.postInvoice_endpoint),
+                                url_fusio("$server/api/", Route.postInvoice_endpoint),
                                 data,
                                 {response ->
                                     val responseObject: ApiInvoice = Gson().fromJson(response.toString(),object : TypeToken<ApiInvoice>() {}.type)
@@ -382,23 +359,25 @@ class HomeFragment : Fragment() {
                                                             val queue = Volley.newRequestQueue(context)
                                                             val timeStamp = (SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
                                                                 .format(System.currentTimeMillis())).toString()
-                                                            val uploadRequest = object: VolleyFileUploadRequest(Method.POST,url_fusio(Route.url, "${responseObject.invoiceId}/picture"),
+                                                            val uploadRequest = object: VolleyFileUploadRequest(Method.POST,url_fusio("$server/api/", "${responseObject.invoiceId}/picture"),
                                                                 {response->
                                                                     Toast.makeText(context,"To save $response",Toast.LENGTH_LONG).show()
-                                                                    pictureViewModel.deleteGetById(im.PictureId)
+                                                                    pictureViewModel.delete(im)
                                                                     if(cpt == pict.size ){
                                                                         GlobalScope.launch {
-                                                                            invoiceViewModel.deleteById(im.InvoiceFId)
+                                                                            invoiceViewModel.detete(it)
                                                                         }
                                                                         Toast.makeText(context,"To $response",Toast.LENGTH_LONG).show()
                                                                     }
                                                                     if(adapterImageStore?.sdtListInvoice?.size ==  comptage ){
+                                                                        adapterImageStore?.deleteAll()
+                                                                        initRecy()
 //                                                                        CoroutineScope(Dispatchers.main).launch {
 //                                                                            invoiceViewModel.deleteById(im.InvoiceFId)
-//                                                                            adapterImageStore?.deleteAll()
+//
 //                                                                            invoiceViewModel.deleteAll()
 //                                                                            pictureViewModel.deleteAll()
-//                                                                            initRecy()
+//
 //                                                                            Toast.makeText(context,"Collection send",Toast.LENGTH_LONG).show()
 //                                                                        }
                                                                     }
@@ -421,7 +400,6 @@ class HomeFragment : Fragment() {
                                                             }
                                                             queue.add(uploadRequest).retryPolicy = DefaultRetryPolicy(0,0,0f)
                                                         }
-
                                                     tour++
                                             }
                                         }
@@ -457,20 +435,16 @@ class HomeFragment : Fragment() {
         var status = false
         CoroutineScope(Dispatchers.IO).launch {
             val stringRequest = StringRequest(
-                Request.Method.GET, url_fusio(Route.url, Route.getAllDirectory_endpoint),
+                Request.Method.GET, url_fusio("$server/api/", Route.getAllDirectory_endpoint),
                 { response ->
-                    Log.e("Viva","######### -> $response")
                     val responseObject: List<Directory> = Gson().fromJson(response,object : TypeToken<java.util.ArrayList<Directory>>() {}.type)
                     responseObject.forEach {
                         directoryViewModel.insert(it)
                     }
                     status = true
-                    Toast.makeText(requireContext(),"Mises à jours détecté for directory",Toast.LENGTH_LONG).show()
-                    Log.e("Arrivederci","######### -> $responseObject")
                 },
                 { error ->
                     Toast.makeText(requireContext(),"Connexion failed retry",Toast.LENGTH_LONG).show()
-                    Log.e("Viva","######### -> $error")
                 }
             )
             Singleton.getInstance(requireContext()).addToRequestQueue(stringRequest)
@@ -482,21 +456,16 @@ class HomeFragment : Fragment() {
         var status = false
         CoroutineScope(Dispatchers.IO).launch {
             val stringRequest = StringRequest(
-                Request.Method.GET, url_fusio(Route.url, Route.getAllInvoiceKey_endpoint),
+                Request.Method.GET, url_fusio("$server/api/", Route.getAllInvoiceKey_endpoint),
                 { response ->
-                    Log.e("Viva","######### -> $response")
-                    // val obj =  Gson().fromJson(response.toString(), object : TypeToken<List<Directory>>() {}.type)
                     val responseObject: List<InvoiceKey> = Gson().fromJson(response,object : TypeToken<java.util.ArrayList<InvoiceKey>>() {}.type)
                     responseObject.forEach {
                         invoiceKeyViewModel.insert(it)
                     }
                     status = true
-                    Toast.makeText(requireContext(),"Mises à jours détecté for invoiceKey",Toast.LENGTH_LONG).show()
-                    Log.e("Arrivederci","######### -> $responseObject")
                 },
                 { error ->
                     Toast.makeText(requireContext(),"Connexion failed retry",Toast.LENGTH_LONG).show()
-                    Log.e("Viva","######### -> $error")
                 }
             )
             Singleton.getInstance(requireContext()).addToRequestQueue(stringRequest)

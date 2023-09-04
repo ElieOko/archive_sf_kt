@@ -2,6 +2,7 @@ package com.example.archive_sfc.room.invoice.myinterface
 
 import androidx.room.*
 import com.example.archive_sfc.models.room.Invoice
+import com.example.archive_sfc.models.room.Picture
 import com.example.archive_sfc.models.room.User
 
 import kotlinx.coroutines.flow.Flow
@@ -17,9 +18,10 @@ interface IInvoiceDao {
     suspend fun update(invoice: Invoice)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(invoice: Invoice)
-
     @Query("DELETE FROM invoice")
     suspend fun deleteAll()
+    @Delete
+    suspend fun delete(invoice: Invoice)
     @Query("DELETE FROM invoice WHERE InvoiceId like :InvoiceId")
     suspend fun deleteById(InvoiceId:Int)
 }

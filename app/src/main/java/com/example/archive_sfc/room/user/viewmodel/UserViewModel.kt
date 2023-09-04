@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.example.archive_sfc.models.room.User
 import com.example.archive_sfc.room.user.repository.UserRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
@@ -33,7 +34,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     }
 
     fun getUser(_user: User) = repository.getUser(_user)
-    fun auth(_user: User) = repository.auth(_user)
+    suspend fun auth(_user: User) :User?=
+        withContext(viewModelScope.coroutineContext) {
+            repository.auth(_user)
+        }
 }
 
 class UserViewModelFactory(private val repository: UserRepository) : ViewModelProvider.Factory {

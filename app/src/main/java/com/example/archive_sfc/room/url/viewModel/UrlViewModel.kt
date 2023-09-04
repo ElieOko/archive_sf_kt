@@ -13,6 +13,9 @@ class UrlViewModel (private val repository: UrlRepository) : ViewModel()  {
     /**
      * Launching a new coroutine to insert the data in a non-blocking way
      */
+    fun update(url: Url) = viewModelScope.launch {
+        repository.update(url)
+    }
     fun insert(url: Url) = viewModelScope.launch {
         repository.insert(url)
     }

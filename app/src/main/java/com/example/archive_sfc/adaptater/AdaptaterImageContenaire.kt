@@ -28,7 +28,6 @@ class AdaptaterImageContenaire : RecyclerView.Adapter<AdaptaterImageContenaire.V
             )
         )
     }
-
     override fun getItemCount(): Int {
        return stdList.size
     }

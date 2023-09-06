@@ -67,8 +67,9 @@ import kotlin.collections.ArrayList
 
 @ExperimentalGetImage
 @RequiresApi(Build.VERSION_CODES.M)
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
     private  var binding: FragmentHomeBinding? = null
+    private var isFragmentAdded = false
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var adapterImageStore: AdaptaterImageStore? = null
     private var recyclerView: RecyclerView? = null
@@ -114,7 +115,6 @@ class HomeFragment : Fragment() {
         return binding!!.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // The usage of an interface lets you inject your own implementation
         Log.e(tag,"onViewCreated")
         val drawerLayout: DrawerLayout = binding!!.drawerLayout
         val navigationView: NavigationView = binding!!.navView
@@ -122,11 +122,7 @@ class HomeFragment : Fragment() {
         val navViewHeaderBinding: NavHeaderMainBinding = NavHeaderMainBinding.bind(headerView)
         navViewHeaderBinding.name.text = UserData.name
         navViewHeaderBinding.status.text = UserData.status
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
-        )
+
 
         binding?.navView?.setNavigationItemSelectedListener {
             when (it.itemId) {
@@ -173,18 +169,7 @@ class HomeFragment : Fragment() {
         recyclerView?.adapter = adapterImageStore
         allPicture()
         urlViewModel.allUrl.observe(viewLifecycleOwner){
-            Toast.makeText(requireContext(),"${it[0]?.server}",Toast.LENGTH_LONG).show()
             server = it[0]?.server!!
-        }
-        userViewModel.user.observe(viewLifecycleOwner) {
-            if (it != null) {
-                Log.d("com", it.toString())
-                Toast.makeText(
-                    requireContext(),
-                    it.username,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
         }
         statusViewModel.allStatus.observe(this){
             if(it.isNotEmpty()){
@@ -217,6 +202,7 @@ class HomeFragment : Fragment() {
                                 adapterImageStore?.delete(it)
                                 invoiceViewModel.detete(it)
                         }
+
                     mode.finish()
                     return true
                 }
@@ -237,17 +223,34 @@ class HomeFragment : Fragment() {
         try {
             val user = User(0, UserData.name, UserData.password)
             setUser(user)
-            invoiceViewModel.allInvoice.observe(viewLifecycleOwner) {
+            invoiceViewModel.getAllInvoice().observe(viewLifecycleOwner) {
                 var iteration = 0
-                it.forEach {invoice ->
-                        iteration++
-                        pictureViewModel.getAllImageByInvoice(invoice.InvoiceId).observe(viewLifecycleOwner){listInvoicePicture ->
-                            adapterImageStore?.addImageInContenaire(invoice,
-                                listInvoicePicture as ArrayList<Picture>,it
+                it.forEach { invoice ->
+                    iteration++
+                    pictureViewModel.getAllImageByInvoice(invoice.InvoiceId)
+                        .observe(viewLifecycleOwner) { listInvoicePicture ->
+                            adapterImageStore?.addImageInContenaire(
+                                invoice,
+                                listInvoicePicture as ArrayList<Picture>,
+                                selectedItems
                             )
                         }
-                    }
+                }
             }
+//            invoiceViewModel.getAllInvoice().observe(viewLifecycleOwner) {
+//                var iteration = 0
+//                it.forEach { invoice ->
+//                    iteration++
+//                    pictureViewModel.getAllImageByInvoice(invoice.InvoiceId)
+//                        .observe(viewLifecycleOwner) { listInvoicePicture ->
+//                            adapterImageStore?.addImageInContenaire(
+//                                invoice,
+//                                listInvoicePicture as ArrayList<Picture>, it
+//                            )
+//                        }
+//                }
+//            }
+            // invoiceViewModel.allInvoice.observe(viewLifecycleOwner) {}
         }
         catch(e:Exception){
             Toast.makeText(context,"${e.message}",Toast.LENGTH_LONG).show()
@@ -298,6 +301,7 @@ class HomeFragment : Fragment() {
             selectedItems.add(invoice)
             invoice.isSelect = true
             invoiceViewModel.update(invoice)
+
         }
         if (selectedItems.isEmpty()) {
             actionMode?.finish()
@@ -372,14 +376,6 @@ class HomeFragment : Fragment() {
                                                                     if(adapterImageStore?.sdtListInvoice?.size ==  comptage ){
                                                                         adapterImageStore?.deleteAll()
                                                                         initRecy()
-//                                                                        CoroutineScope(Dispatchers.main).launch {
-//                                                                            invoiceViewModel.deleteById(im.InvoiceFId)
-//
-//                                                                            invoiceViewModel.deleteAll()
-//                                                                            pictureViewModel.deleteAll()
-//
-//                                                                            Toast.makeText(context,"Collection send",Toast.LENGTH_LONG).show()
-//                                                                        }
                                                                     }
                                                                 },
                                                                 {error->
@@ -542,5 +538,37 @@ class HomeFragment : Fragment() {
             dialog.dismiss()
         }
         mDialog.build().show()
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_logout -> {
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                activity?.finish()
+                true
+            }
+            // Add more menu items and their click handling
+            else -> false
+        }
+      return true
+    }
+
+    private fun detachAndAttachFragment() {
+        val fragmentManager = parentFragmentManager
+        val fragment = fragmentManager.findFragmentByTag("HomeFragmentTag")
+        if (fragment != null &&  fragment.isDetached) {
+            val transaction = fragmentManager.beginTransaction()
+            transaction.attach(fragment)
+            transaction.commit()
+        }
+        if(fragment != null && !fragment.isDetached){
+            val transaction = fragmentManager.beginTransaction()
+            transaction.detach(fragment)
+            transaction.attach(fragment)
+            transaction.commit()
+        }
+
     }
 }

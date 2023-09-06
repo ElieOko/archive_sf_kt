@@ -76,8 +76,7 @@ open class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //prefsData = ViewModelProvider(this).get(PrefsDataStoreScreenViewModel::class.java)
-        val url = Url(1,"https://86e9-41-77-220-94.ngrok-free.app")
+        val url = Url(1,"https://9fd6-41-174-140-34.ngrok-free.app")
         urlViewModel.insert(url)
         urlViewModel.allUrl.observe(this){
             server = it[0]?.server!!
@@ -163,10 +162,10 @@ open class LoginActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-
         }
     }
 
+    @SuppressLint("SuspiciousIndentation")
     @OptIn(DelicateCoroutinesApi::class)
     private fun offline(_user: User, view:View,status: Boolean = false): Any? {
         var check : Any? = null
@@ -188,8 +187,6 @@ open class LoginActivity : AppCompatActivity() {
                             intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                             startActivity(intent)
                             finish()
-                            Snackbar.make(view,"Connecté", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show()
                         }
                     }
                     else{
@@ -219,14 +216,12 @@ open class LoginActivity : AppCompatActivity() {
                 binding.buttonLogin.isEnabled = true
         return check
     }
-
     private fun online(user: User, view:View,status: Boolean = false) {
         binding.username.isEnabled = false
         binding.password.isEnabled = false
         binding.buttonLogin.isEnabled = false
         binding.buttonLogin.text = "Loading..."
         binding.progressIndicator.isIndeterminate = true
-        var test = 0
         if(!checkingConnexion()) run {
             mDialogConnexion("Connexion failed","Connection error, make sure you are connected to the internet",R.raw.animation_failed_connexion)
             binding.username.isEnabled = true

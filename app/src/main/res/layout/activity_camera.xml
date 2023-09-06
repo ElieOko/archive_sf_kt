@@ -14,8 +14,8 @@
 
 
     <ImageButton
-        android:layout_width="60sp"
-        android:layout_height="60sp"
+        android:layout_width="40sp"
+        android:layout_height="40sp"
         android:layout_centerHorizontal="false"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="40sp"
@@ -26,23 +26,12 @@
         android:id="@+id/flash"
         />
 
-    <ImageButton
-        android:layout_width="60sp"
-        android:layout_height="60sp"
-        android:layout_centerHorizontal="false"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40sp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_menu_gallery"
-        app:tint="#fff"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:id="@+id/galery_visit"
-        />
+
 
 
     <ImageButton
-        android:layout_width="60sp"
-        android:layout_height="60sp"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="40sp"
@@ -54,8 +43,8 @@
         />
 
     <ImageButton
-        android:layout_width="60sp"
-        android:layout_height="60sp"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
         android:layout_centerHorizontal="false"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"

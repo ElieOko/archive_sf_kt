@@ -17,9 +17,9 @@ import com.example.archive_sfc.models.room.Invoice
 import com.example.archive_sfc.models.room.Picture
 
 class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>(){
-    var sdtListInvoice : MutableList<Invoice> = ArrayList()
+    var sdtListInvoice =  mutableListOf<Invoice>()
     private var sdt : ArrayList<InvoicePicture> = ArrayList()
-    var stdListImage :ArrayList<List<Picture>> = ArrayList()
+    var stdListImage :ArrayList<List<Picture>>  =  ArrayList()
     private var onClickItem :((Invoice)->Unit)? =null
     private var onClickDeleteItem :(()->Unit)? =null
     private var onLongClickItem :((Invoice)->Unit)? =null
@@ -27,13 +27,15 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
     private var isEnabled = false
     fun deleteAll(){
         this.sdtListInvoice.clear()
-        this.stdListImage.clear()
+
         //notifyDataSetChanged()
     }
     fun delete(invoice: Invoice){
         val position = this.sdtListInvoice.indexOf(invoice)
+
         sdtListInvoice.removeAt(position)
         notifyItemRemoved(position)
+        sdtListInvoice.remove(invoice)
         notifyItemRangeChanged(position, sdtListInvoice.size)
         notifyDataSetChanged()
     }
@@ -49,14 +51,16 @@ class AdaptaterImageStore : RecyclerView.Adapter<AdaptaterImageStore.ViewHolder>
 
     fun addImageInContenaire(
         invoice: Invoice,
-        listPicture: ArrayList<Picture>,
-        invoices: List<Invoice>
+        listPicture:ArrayList<Picture>,
+        invoices: MutableList<Invoice>
     ){
-        if(!this.sdtListInvoice.contains(invoice) && !this.stdListImage.contains(listPicture)){
-            this.sdtListInvoice.add(invoice)
-            this.stdListImage.add(listPicture)
-        }
-        notifyDataSetChanged()
+            if(!this.sdtListInvoice.contains(invoice)){
+                this.sdtListInvoice.add(invoice)
+            }
+            if(!this.stdListImage.contains(listPicture)){
+                this.stdListImage.add(listPicture)
+            }
+            notifyDataSetChanged()
     }
     @SuppressLint("SuspiciousIndentation")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {

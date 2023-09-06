@@ -48,7 +48,7 @@ import java.util.*
 import java.util.concurrent.Executors
 @ExperimentalGetImage
 class CameraActivity : AppCompatActivity() {
-    private  lateinit var mBinding: ActivityCameraBinding
+    private lateinit var mBinding: ActivityCameraBinding
     private var imageCapture: ImageCapture? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
     private lateinit var imageAnalysis : ImageAnalysis
@@ -75,7 +75,6 @@ class CameraActivity : AppCompatActivity() {
                 }
             })
         }
-
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
                 Manifest.permission.CAMERA

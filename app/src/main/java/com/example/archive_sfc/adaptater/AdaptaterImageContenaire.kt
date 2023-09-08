@@ -9,9 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.archive_sfc.R
 import com.example.archive_sfc.models.FileState
 import com.example.archive_sfc.models.Profil
+import com.example.archive_sfc.models.room.Invoice
 
 class AdaptaterImageContenaire : RecyclerView.Adapter<AdaptaterImageContenaire.ViewHolder>() {
     private var stdList :ArrayList<FileState> = ArrayList()
+    private var onClickItem :((FileState)->Unit)? =null
+    private var onClickDeleteItem :(()->Unit)? =null
 
     fun addImageInContenaire(items: ArrayList<FileState>){
         this.stdList = items

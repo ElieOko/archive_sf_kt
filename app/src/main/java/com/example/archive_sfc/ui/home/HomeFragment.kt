@@ -36,6 +36,7 @@ import com.example.archive_sfc.constante.UserData
 import com.example.archive_sfc.databinding.FragmentHomeBinding
 import com.example.archive_sfc.databinding.NavHeaderMainBinding
 import com.example.archive_sfc.models.ApiInvoice
+import com.example.archive_sfc.models.InvoicePicture
 import com.example.archive_sfc.models.room.*
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModel
 import com.example.archive_sfc.room.directory.viewModel.DirectoryViewModelFactory
@@ -54,6 +55,7 @@ import com.example.archive_sfc.room.user.viewmodel.UserViewModelFactory
 import com.example.archive_sfc.utils.url_fusio
 import com.example.archive_sfc.volley.Singleton
 import com.example.archive_sfc.volley.VolleyFileUploadRequest
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -63,7 +65,6 @@ import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 @ExperimentalGetImage
 @RequiresApi(Build.VERSION_CODES.M)
@@ -90,6 +91,7 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory((activity?.application as UserApplication).repository)
     }
+    private val dataInvoicePicture : InvoicePicture =InvoicePicture()
     private var userOn:Int = 0
     private val invoiceKeyViewModel: InvoiceKeyViewModel by viewModels {
         InvoiceKeyViewModelFactory((activity?.application as UserApplication).repositoryInvoiceKey)
@@ -116,6 +118,10 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.e(tag,"onViewCreated")
+        recyclerView = binding?.recyclerViewImage
+        adapterImageStore = AdaptaterImageStore()
+        recyclerView?.layoutManager = GridLayoutManager(requireContext(), 2)
+        recyclerView?.adapter = adapterImageStore
         val drawerLayout: DrawerLayout = binding!!.drawerLayout
         val navigationView: NavigationView = binding!!.navView
         val headerView = navigationView.getHeaderView(0)
@@ -143,6 +149,7 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
         }
         initRecy()
         manageEvent()
+
         binding?.toolbar?.inflateMenu(R.menu.main)
         binding?.toolbar?.setOnMenuItemClickListener {
             when (it.itemId) {
@@ -163,10 +170,7 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
 
     private fun initRecy() {
 // 123456789//MA
-        recyclerView = binding?.recyclerViewImage
-        adapterImageStore = AdaptaterImageStore()
-        recyclerView?.layoutManager = GridLayoutManager(requireContext(), 2)
-        recyclerView?.adapter = adapterImageStore
+
         allPicture()
         urlViewModel.allUrl.observe(viewLifecycleOwner){
             server = it[0]?.server!!
@@ -199,8 +203,9 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
                         var i = 0
                         selectedItems.forEach {
                             i++
-                                adapterImageStore?.delete(it)
-                                invoiceViewModel.detete(it)
+
+                            dialog("Suppression de ${selectedItems.size} invoice","Voulez-vous vraiment supprimer cette invoice",selectedItems)
+                            //adapterImageStore?.delete(it)
                         }
 
                     mode.finish()
@@ -221,21 +226,29 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
 
     private fun allPicture() {
         try {
-            val user = User(0, UserData.name, UserData.password)
-            setUser(user)
+//            val user = User(0, UserData.name, UserData.password)
+//            setUser(user)
             invoiceViewModel.getAllInvoice().observe(viewLifecycleOwner) {
                 var iteration = 0
+
                 it.forEach { invoice ->
                     iteration++
-                    pictureViewModel.getAllImageByInvoice(invoice.InvoiceId)
-                        .observe(viewLifecycleOwner) { listInvoicePicture ->
-                            adapterImageStore?.addImageInContenaire(
-                                invoice,
-                                listInvoicePicture as ArrayList<Picture>,
-                                selectedItems
-                            )
+                    pictureViewModel.getAllImageByInvoice(invoice.InvoiceId).observe(viewLifecycleOwner) { listInvoicePicture ->
+                        if(!dataInvoicePicture.listPicture.contains(listInvoicePicture) &&  !dataInvoicePicture.list.contains(invoice)) {
+                            dataInvoicePicture.listPicture.add(listInvoicePicture)
+                            dataInvoicePicture.list.add(invoice)
+                            Toast.makeText(context,"entry",Toast.LENGTH_LONG).show()
                         }
+                        if(it.size == iteration ){
+                            adapterImageStore?.allData(dataInvoicePicture)
+                        }
+//                        adapterImageStore?.addImageInContenaire(invoice,
+//                            listInvoicePicture as ArrayList<Picture>
+//                        )
+                    }
                 }
+
+
             }
 //            invoiceViewModel.getAllInvoice().observe(viewLifecycleOwner) {
 //                var iteration = 0
@@ -555,15 +568,31 @@ class HomeFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
       return true
     }
 
+    private fun dialog(title:String="", message:String="", invoice: MutableList<Invoice>){
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Ok") { dialog, _ ->
+                invoice.forEach {
+                    adapterImageStore?.delete(it)
+                    invoiceViewModel.detete(it)
+                    allPicture()
+                }
+                detachAndAttachFragment()
+                dialog.dismiss()
+            }
+            .setCancelable(true)
+            .show()
+    }
     private fun detachAndAttachFragment() {
         val fragmentManager = parentFragmentManager
         val fragment = fragmentManager.findFragmentByTag("HomeFragmentTag")
-        if (fragment != null &&  fragment.isDetached) {
-            val transaction = fragmentManager.beginTransaction()
-            transaction.attach(fragment)
-            transaction.commit()
-        }
-        if(fragment != null && !fragment.isDetached){
+//        if (fragment != null &&  fragment.isDetached) {
+//            val transaction = fragmentManager.beginTransaction()
+//            transaction.attach(fragment)
+//            transaction.commit()
+//        }
+        if(fragment != null){
             val transaction = fragmentManager.beginTransaction()
             transaction.detach(fragment)
             transaction.attach(fragment)

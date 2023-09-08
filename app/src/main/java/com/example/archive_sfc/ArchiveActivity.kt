@@ -197,6 +197,7 @@ class ArchiveActivity : AppCompatActivity() {
     }
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
         if (requestCode == 1 && resultCode == RESULT_OK) {
             if (data!!.clipData != null) {
                 val count = data.clipData!!.itemCount
@@ -231,7 +232,6 @@ class ArchiveActivity : AppCompatActivity() {
         intent.type = "image/*"
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true)
         intent.action = Intent.ACTION_GET_CONTENT
-
     }
     @SuppressLint("SetTextI18n")
     private fun calendarWithTextInput() {

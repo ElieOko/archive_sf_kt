@@ -76,7 +76,7 @@ open class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val url = Url(1,"https://9fd6-41-174-140-34.ngrok-free.app")
+        val url = Url(1,"https://a490-197-157-209-35.ngrok-free.app")
         urlViewModel.insert(url)
         urlViewModel.allUrl.observe(this){
             server = it[0]?.server!!
